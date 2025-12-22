@@ -281,11 +281,6 @@ export default function PostsPage() {
 				<Card>
 					<CardContent className="py-8 text-center">
 						<p className="text-muted-foreground mb-4">No posts found</p>
-						{!blogId && (
-							<p className="text-sm text-muted-foreground">
-								Enter a blog ID to view posts
-							</p>
-						)}
 					</CardContent>
 				</Card>
 			) : (

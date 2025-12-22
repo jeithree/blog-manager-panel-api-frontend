@@ -141,7 +141,7 @@ export default function CategoriesTagsPage() {
 					<CardTitle>Blog Selection</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<div>
+					<div className="space-y-2">
 						<Label htmlFor="blogId">Select Blog</Label>
 						<Select
 							value={blogId}

@@ -91,8 +91,8 @@ export default function AuthorsPage() {
 				<CardHeader>
 					<CardTitle>Blog</CardTitle>
 				</CardHeader>
-				<CardContent className="space-y-3">
-					<Label>Choose blog</Label>
+				<CardContent className="space-y-2">
+					<Label>Select blog</Label>
 					<Select
 						value={selectedBlogId}
 						onValueChange={setSelectedBlogId}>
