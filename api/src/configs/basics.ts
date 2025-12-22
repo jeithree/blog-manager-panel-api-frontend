@@ -46,14 +46,10 @@ if (!process.env.REDIS_HOST) {
 if (!process.env.REDIS_PORT) {
 	throw new Error('REDIS_PORT is not defined in environment variables');
 }
-if (!process.env.REDIS_PASSWORD) {
-	throw new Error('REDIS_PASSWORD is not defined in environment variables');
-}
 
 export const REDIS_HOST = process.env.REDIS_HOST;
 export const REDIS_PORT = Number(process.env.REDIS_PORT);
 export const REDIS_URL = `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
-export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 
 if (!process.env.OPENAI_API_KEY) {
 	throw new Error('OPENAI_API_KEY is not defined in environment variables');
