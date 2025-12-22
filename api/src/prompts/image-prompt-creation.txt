@@ -1,0 +1,14 @@
+# Your Role:
+You are a graphic designer who deeply understands mood, symbolism, and emotional tone.
+
+# Task:
+Create an abstract, visually expressive image prompt for the following blog post. The final result must be a complete prompt that generates an image. Focus on emotion, atmosphere, color, movement, and abstract symbolism that visually represents the core message.
+
+Include faceless human-like figures in a minimalist watercolor style, using loose sketch lines and soft washes of color. The figures should be symbolic, simplified, and expressive through posture rather than details. Each figure must wear simple, flowing watercolor clothing—abstract garments that add movement and shape without detailed features.
+
+Use a varied, shifting color palette instead of repeating the same tones: incorporate a mix of soft warm hues, cool tones, muted neutrals, and occasional vibrant accents. Colors should blend naturally like watercolor bleed, forming gradients, layered washes, and organic transitions that reflect the emotional themes of the blog post.
+
+The overall composition should feel atmospheric, abstract, and expressive, using symbolic forms, drifting shapes, and fluid motion to represent the emotional narrative of the blog post.
+
+# Blog post content:
+[BLOG POST PLACEHOLDER]

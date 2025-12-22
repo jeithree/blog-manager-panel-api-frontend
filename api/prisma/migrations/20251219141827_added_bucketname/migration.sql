@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Blog` ADD COLUMN `R2BucketName` VARCHAR(191) NULL;

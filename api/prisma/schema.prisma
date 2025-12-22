@@ -1,0 +1,135 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id                String    @id @default(cuid())
+    username          String    @unique
+    email             String    @unique
+    password          String
+    name              String?
+    avatar            String?
+    role              Role      @default(USER)
+    blogs             Blog[]
+    
+    createdAt         DateTime  @default(now())
+    updatedAt         DateTime  @updatedAt
+}
+
+model Blog {
+    id                String    @id @default(cuid())
+    title             String    @unique
+    domain            String    @unique
+    description       String
+    netlifySiteId     String
+    R2BucketName      String
+    R2CustomDomain    String
+    userId            String
+    user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    posts             Post[]
+    categories        Category[]
+    tags              Tag[]
+    authors           Author[]
+    apiKey            String    @unique
+    createdAt         DateTime  @default(now())
+    updatedAt         DateTime  @updatedAt
+
+    @@index([userId])
+}
+
+model Category {
+    id                String    @id @default(cuid())
+    name              String
+    slug              String
+    description       String
+    blogId            String
+    blog              Blog      @relation(fields: [blogId], references: [id], onDelete: Cascade)
+    posts             Post[]
+    createdAt         DateTime  @default(now())
+    updatedAt         DateTime  @updatedAt
+
+    @@unique([name, blogId])
+    @@unique([slug, blogId])
+    @@index([blogId])
+}
+
+model Tag {
+    id                String    @id @default(cuid())
+    name              String    
+    slug              String
+    blogId            String
+    blog              Blog      @relation(fields: [blogId], references: [id], onDelete: Cascade)
+    posts             Post[]
+    createdAt         DateTime  @default(now())
+    updatedAt         DateTime  @updatedAt
+
+    @@unique([name, blogId])
+    @@unique([slug, blogId])
+    @@index([blogId])
+}
+
+model Author {
+    id                String    @id @default(cuid())
+    name              String
+    slug              String
+    bio               String?
+    avatar            String?
+    blogId            String
+    blog              Blog      @relation(fields: [blogId], references: [id], onDelete: Cascade)
+    posts             Post[]
+    createdAt         DateTime  @default(now())
+    updatedAt         DateTime  @updatedAt
+
+    @@unique([name, blogId])
+    @@unique([slug, blogId])
+    @@index([blogId])
+}
+
+model Post {
+    id                String        @id @default(cuid())
+    title             String
+    description       String?       @db.Text
+    slug              String
+    imageUrl          String?
+    outline           String?       @db.Text
+    content           String?       @db.Text
+    categoryId        String
+    category          Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    tags              Tag[]
+    authorId          String
+    author            Author        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+    blogId            String
+    blog              Blog          @relation(fields: [blogId], references: [id], onDelete: Cascade)
+
+    status            PostStatus    @default(DRAFT)
+    publishedAt       DateTime?
+    createdAt         DateTime      @default(now())
+    updatedAt         DateTime      @updatedAt
+
+    @@unique([slug, blogId])
+    @@index([blogId])
+    @@index([categoryId])
+    @@index([authorId])
+}
+
+enum PostStatus {
+    DRAFT
+    SCHEDULED
+    PUBLISHED
+}
+
+enum Role {
+    USER
+    ADMIN
+}

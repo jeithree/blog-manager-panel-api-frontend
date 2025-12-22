@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"noEmit": true, // Do not emit outputs
+		"target": "esnext", // Use the latest ECMAScript features
+		"module": "nodenext", // ESM imports
+		"strict": true, // Enable all strict type-checking options
+		"noUnusedLocals": true, // Report errors on unused locals
+		"noUnusedParameters": true, // Report errors on unused parameters
+		"noFallthroughCasesInSwitch": true, // Report errors for fallthrough cases in switch statements
+		"noImplicitReturns": true, // Report errors for functions that do not return a value in all code paths
+		"allowImportingTsExtensions": true, // Allow importing .ts files
+		"rewriteRelativeImportExtensions": true, // Rewrite relative imports to .ts
+		"verbatimModuleSyntax": true, // Preserve module syntax
+		"erasableSyntaxOnly": true // Enable type-only imports/exports
+	}
+}
