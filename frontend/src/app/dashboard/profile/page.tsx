@@ -1,6 +1,6 @@
 'use client';
 
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import useSWR from 'swr';
@@ -25,13 +25,26 @@ export default function ProfilePage() {
 	const {
 		register,
 		handleSubmit,
+		reset,
 		formState: {errors},
 	} = useForm<UpdateProfileData>({
 		resolver: zodResolver(updateProfileSchema),
-		values: {
-			name: profileData?.name || '',
+		defaultValues: {
+			name: '',
+			currentPassword: '',
+			newPassword: '',
 		},
 	});
+
+	useEffect(() => {
+		if (profileData) {
+			reset({
+				name: profileData.name || '',
+				currentPassword: '',
+				newPassword: '',
+			});
+		}
+	}, [profileData, reset]);
 
 	const onSubmit = async (data: UpdateProfileData) => {
 		setError('');
@@ -40,8 +53,13 @@ export default function ProfilePage() {
 
 		try {
 			await updateProfile(data);
-			mutate();
+			await mutate();
 			setSuccess('Profile updated successfully');
+			reset({
+				name: profileData?.name || '',
+				currentPassword: '',
+				newPassword: '',
+			});
 		} catch (err) {
 			setError((err as ApiError).message || 'Failed to update profile');
 		} finally {
@@ -77,7 +95,9 @@ export default function ProfilePage() {
 								value={profileData?.username || ''}
 								disabled
 							/>
-							<p className="text-xs text-muted-foreground">Username cannot be changed</p>
+							<p className="text-xs text-muted-foreground">
+								Username cannot be changed
+							</p>
 						</div>
 
 						<div className="space-y-2">
@@ -86,7 +106,9 @@ export default function ProfilePage() {
 								value={profileData?.email || ''}
 								disabled
 							/>
-							<p className="text-xs text-muted-foreground">Email cannot be changed</p>
+							<p className="text-xs text-muted-foreground">
+								Email cannot be changed
+							</p>
 						</div>
 
 						<div className="space-y-2">
@@ -96,8 +118,51 @@ export default function ProfilePage() {
 								{...register('name')}
 							/>
 							{errors.name && (
-								<p className="text-sm text-destructive">{errors.name.message}</p>
+								<p className="text-sm text-destructive">
+									{errors.name.message}
+								</p>
 							)}
+						</div>
+
+						<hr className="border-muted/50" />
+
+						<div>
+							<h2 className="text-lg font-semibold">Change password</h2>
+							<p className="text-sm text-muted-foreground">
+								Enter your current password and a new password to update it.
+							</p>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="currentPassword">Current password</Label>
+							<Input
+								id="currentPassword"
+								type="password"
+								{...register('currentPassword')}
+							/>
+							{errors.currentPassword && (
+								<p className="text-sm text-destructive">
+									{errors.currentPassword.message}
+								</p>
+							)}
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="newPassword">New password</Label>
+							<Input
+								id="newPassword"
+								type="password"
+								{...register('newPassword')}
+							/>
+							{errors.newPassword && (
+								<p className="text-sm text-destructive">
+									{errors.newPassword.message}
+								</p>
+							)}
+							<p className="text-xs text-muted-foreground">
+								Must include upper and lowercase letters, a number, and a
+								special character.
+							</p>
 						</div>
 
 						<Button

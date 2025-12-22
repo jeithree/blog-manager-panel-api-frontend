@@ -1,7 +1,7 @@
 import type {LoginDto} from '../types/auth.ts';
 import prisma from '../prisma.ts';
-import {comparePassword} from '../helpers/password.ts';
-import {BadRequestError} from '../lib/appError.ts';
+import {comparePassword, hashPassword} from '../helpers/password.ts';
+import {BadRequestError, NotFoundError} from '../lib/appError.ts';
 
 export const login = async (data: LoginDto) => {
 	// Find user by email
@@ -49,11 +49,47 @@ export const getUserById = async (userId: string) => {
 
 export const updateUser = async (
 	userId: string,
-	data: {name?: string; avatar?: string}
+	data: {
+		name?: string;
+		avatar?: string;
+		currentPassword?: string;
+		newPassword?: string;
+	}
 ) => {
+	let hashedPassword: string | undefined;
+
+	if (data.newPassword) {
+		if (!data.currentPassword) {
+			throw new BadRequestError(
+				'Current password is required to change password'
+			);
+		}
+
+		const existingUser = await prisma.user.findUnique({where: {id: userId}});
+
+		if (!existingUser) {
+			throw new NotFoundError('User not found');
+		}
+
+		const isCurrentValid = await comparePassword(
+			data.currentPassword,
+			existingUser.password
+		);
+
+		if (!isCurrentValid) {
+			throw new BadRequestError('Current password is incorrect');
+		}
+
+		hashedPassword = await hashPassword(data.newPassword);
+	}
+
 	const user = await prisma.user.update({
 		where: {id: userId},
-		data: data,
+		data: {
+			name: data.name,
+			avatar: data.avatar,
+			...(hashedPassword ? {password: hashedPassword} : {}),
+		},
 		select: {
 			id: true,
 			username: true,
