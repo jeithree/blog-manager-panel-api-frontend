@@ -10,6 +10,15 @@ const nextConfig: NextConfig = {
 			},
 		];
 	},
+    // async redirects() {
+	// 	return [
+	// 		{
+	// 			source: '/admin',
+	// 			destination: '/',
+	// 			permanent: true,
+	// 		},
+	// 	];
+	// },
 	reactCompiler: true,
 };
 

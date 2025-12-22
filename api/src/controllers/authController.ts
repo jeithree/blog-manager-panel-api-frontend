@@ -1,26 +1,9 @@
 import type {Request, Response, NextFunction} from 'express';
-import type {RegisterDto, LoginDto} from '../types/auth.ts';
+import type {LoginDto} from '../types/auth.ts';
 import * as authService from '../services/authService.ts';
 import {successResponse} from '../lib/apiResponse.ts';
 import * as Logger from '../helpers/logger.ts';
 import {SESSION_COOKIE} from '../configs/cookies.ts';
-
-export const register = async (
-	req: Request,
-	res: Response,
-	next: NextFunction
-) => {
-	try {
-		const data = req.body as RegisterDto;
-		const user = await authService.register(data);
-
-		return res
-			.status(201)
-			.json(successResponse('User registered successfully', user));
-	} catch (error) {
-		return next(error);
-	}
-};
 
 export const login = async (
 	req: Request,

@@ -7,6 +7,7 @@ import {Button} from '@/components/ui/button';
 
 export default function DashboardPage() {
 	const {session} = useSession();
+	const isAdmin = session?.user?.role === 'ADMIN';
 
 	return (
 		<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -67,6 +68,15 @@ export default function DashboardPage() {
 								Create New Post
 							</Button>
 						</Link>
+						{isAdmin && (
+							<Link href="/dashboard/admin/create-user">
+								<Button
+									className="w-full"
+									variant="outline">
+									Admin: Create User
+								</Button>
+							</Link>
+						)}
 					</CardContent>
 				</Card>
 

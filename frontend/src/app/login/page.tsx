@@ -2,7 +2,6 @@
 
 import {useState, useEffect} from 'react';
 import {useRouter} from 'next/navigation';
-import Link from 'next/link';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {loginSchema, type LoginData} from '@/types/auth';
@@ -103,15 +102,6 @@ export default function LoginPage() {
 							disabled={isLoading}>
 							{isLoading ? 'Logging in...' : 'Login'}
 						</Button>
-
-						<p className="text-center text-sm text-muted-foreground">
-							Don&apos;t have an account?{' '}
-							<Link
-								href="/register"
-								className="text-primary hover:underline">
-								Register here
-							</Link>
-						</p>
 					</form>
 				</CardContent>
 			</Card>

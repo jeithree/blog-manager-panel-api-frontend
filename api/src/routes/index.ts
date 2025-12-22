@@ -1,5 +1,6 @@
 import {Router} from 'express';
 import authRoutes from './auth.ts';
+import adminRoutes from './admin.ts';
 import userRoutes from './users.ts';
 import blogRoutes from './blogs.ts';
 import categoryRoutes from './categories.ts';
@@ -13,6 +14,7 @@ const router = Router();
 
 router.use('/public', publicRoutes);
 router.use('/auth', authRoutes);
+router.use('/admin', adminRoutes);
 router.use('/users', userRoutes);
 router.use('/blogs', blogRoutes);
 router.use('/categories', categoryRoutes);

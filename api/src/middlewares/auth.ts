@@ -25,6 +25,13 @@ export const isNotAuthenticated = (
 	return next();
 };
 
+export const isAdmin = (req: Request, _res: Response, next: NextFunction) => {
+	if (req.session.role !== 'admin') {
+		return next(new UnauthorizedError('You do not have admin privileges'));
+	}
+	return next();
+};
+
 export const hasApiKey = async (
 	req: Request,
 	_res: Response,

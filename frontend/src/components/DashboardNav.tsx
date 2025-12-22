@@ -13,7 +13,7 @@ interface NavItem {
 	href: string;
 }
 
-const navItems: NavItem[] = [
+const baseNavItems: NavItem[] = [
 	{title: 'Overview', href: '/dashboard'},
 	{title: 'Posts', href: '/dashboard/posts'},
 	{title: 'Blogs', href: '/dashboard/blogs'},
@@ -23,7 +23,11 @@ const navItems: NavItem[] = [
 export function DashboardNav() {
 	const pathname = usePathname();
 	const router = useRouter();
-	const {mutate} = useSession();
+	const {session, mutate} = useSession();
+	const isAdmin = session?.user?.role === 'ADMIN';
+	const navItems = isAdmin
+		? [...baseNavItems, {title: 'Admin', href: '/dashboard/admin/create-user'}]
+		: baseNavItems;
 	const [isLoggingOut, setIsLoggingOut] = useState(false);
 
 	const handleLogout = async () => {

@@ -3,30 +3,32 @@ import rateLimit from 'express-rate-limit';
 import * as Logger from '../helpers/logger.ts';
 import {RateLimitError} from '../lib/appError.ts';
 
-export const registerLimiter = rateLimit({
-	windowMs: 60 * 60 * 1000,
-	max: 10,
+export const loginLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	max: 3,
 	handler: (req: Request, _res: Response, next: NextFunction) => {
-		Logger.logToFile(`Rate limit exceeded for registration: ${req.ip}`, 'info');
+		Logger.logToFile(`Rate limit exceeded for login: ${req.ip}`, 'info');
 		next(
 			new RateLimitError(
-                'You have exceeded the maximum number of registration attempts. Please try again later.',
-				'REGISTER_RATE_LIMIT_EXCEEDED'
-				
+				'You have exceeded the maximum number of login attempts. Please try again later.',
+				'LOGIN_RATE_LIMIT_EXCEEDED'
 			)
 		);
 	},
 });
 
-export const loginLimiter = rateLimit({
-	windowMs: 15 * 60 * 1000,
+export const createUserLimiter = rateLimit({
+	windowMs: 60 * 60 * 1000,
 	max: 10,
 	handler: (req: Request, _res: Response, next: NextFunction) => {
-		Logger.logToFile(`Rate limit exceeded for login: ${req.ip}`, 'info');
+		Logger.logToFile(
+			`Rate limit exceeded for user creation: ${req.ip}`,
+			'info'
+		);
 		next(
 			new RateLimitError(
-                'You have exceeded the maximum number of login attempts. Please try again later.',
-				'LOGIN_RATE_LIMIT_EXCEEDED',
+				'You have exceeded the maximum number of user creation attempts. Please try again later.',
+				'CREATE_USER_RATE_LIMIT_EXCEEDED'
 			)
 		);
 	},

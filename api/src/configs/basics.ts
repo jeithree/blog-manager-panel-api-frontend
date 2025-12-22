@@ -8,7 +8,7 @@ if (!process.env.API_URL) {
 	throw new Error('API_URL is not defined in environment variables');
 }
 if (!process.env.SITE_URL) {
-    throw new Error('SITE_URL is not defined in environment variables');
+	throw new Error('SITE_URL is not defined in environment variables');
 }
 if (!process.env.TIME_ZONE) {
 	throw new Error('TIME_ZONE is not defined in environment variables');
