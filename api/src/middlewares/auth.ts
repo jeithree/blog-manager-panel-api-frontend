@@ -26,7 +26,7 @@ export const isNotAuthenticated = (
 };
 
 export const isAdmin = (req: Request, _res: Response, next: NextFunction) => {
-	if (req.session.role !== 'admin') {
+	if (req.session.role !== 'ADMIN') {
 		return next(new UnauthorizedError('You do not have admin privileges'));
 	}
 	return next();
