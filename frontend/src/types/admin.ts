@@ -29,7 +29,6 @@ export const createUserSchema = z.object({
 		),
 	name: z.string().max(100, 'Name must be at most 100 characters').optional(),
 });
-
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 
 export type AdminUser = {
@@ -37,6 +36,6 @@ export type AdminUser = {
 	username: string;
 	email: string;
 	name?: string | null;
-	role: 'USER' | 'ADMIN';
+	role: 'USER';
 	createdAt: string;
 };

@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import {useRouter, useParams} from 'next/navigation';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -12,6 +12,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
+import Image from 'next/image';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Badge} from '@/components/ui/badge';
 import {MarkdownEditor} from '@/components/MarkdownEditor';
@@ -53,11 +54,7 @@ export default function EditPostPage() {
 	const [editRequest, setEditRequest] = useState('');
 	const [isGenerating, setIsGenerating] = useState(false);
 
-	useEffect(() => {
-		loadPost();
-	}, [postId]);
-
-	const loadPost = async () => {
+	const loadPost = useCallback(async () => {
 		setIsLoading(true);
 		try {
 			// Get blogId from query param
@@ -104,7 +101,11 @@ export default function EditPostPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [postId]);
+
+	useEffect(() => {
+		loadPost();
+	}, [loadPost]);
 
 	const handleAIEdit = async () => {
 		if (!editRequest || !post) return;
@@ -323,7 +324,7 @@ export default function EditPostPage() {
 							<Label htmlFor="image">Featured Image</Label>
 							{post.imageUrl && !imageFile && (
 								<div className="mb-2">
-									<img
+									<Image
 										src={post.imageUrl}
 										alt="Current featured image"
 										className="max-w-xs rounded-md"

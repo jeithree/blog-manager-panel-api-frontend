@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState, useCallback} from 'react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -22,17 +22,7 @@ export default function AuthorsPage() {
 	const [name, setName] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
 
-	useEffect(() => {
-		loadBlogs();
-	}, []);
-
-	useEffect(() => {
-		if (selectedBlogId) {
-			loadAuthors(selectedBlogId);
-		}
-	}, [selectedBlogId]);
-
-	const loadBlogs = async () => {
+	const loadBlogs = useCallback(async () => {
 		try {
 			const res = await blogService.getBlogs();
 			if (res.success && res.data) {
@@ -44,9 +34,9 @@ export default function AuthorsPage() {
 		} catch (error) {
 			console.error('Failed to load blogs', error);
 		}
-	};
+	}, [selectedBlogId]);
 
-	const loadAuthors = async (blogId: string) => {
+	const loadAuthors = useCallback(async (blogId: string) => {
 		try {
 			const res = await authorService.getAuthors(blogId);
 			if (res.success && res.data) {
@@ -55,7 +45,17 @@ export default function AuthorsPage() {
 		} catch (error) {
 			console.error('Failed to load authors', error);
 		}
-	};
+	}, []);
+
+	useEffect(() => {
+		loadBlogs();
+	}, [loadBlogs]);
+
+	useEffect(() => {
+		if (selectedBlogId) {
+			loadAuthors(selectedBlogId);
+		}
+	}, [loadAuthors, selectedBlogId]);
 
 	const handleCreate = async () => {
 		if (!name.trim() || !selectedBlogId) return;

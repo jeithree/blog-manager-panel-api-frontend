@@ -5,6 +5,8 @@ import * as netlifyService from './netlifyService.ts';
 import * as Logger from '../helpers/logger.ts';
 import {sleep} from '../helpers/helpers.ts';
 import RedisCache from '../lib/redisCache.ts';
+import {DEV_MODE} from '../configs/basics.ts';
+import * as postService from './postService.ts';
 
 const triggerDeployWithRetry = async (
 	netlifySiteId: string,
@@ -69,22 +71,42 @@ const publishScheduledPosts = async () => {
 		} scheduled post(s) at ${now.toISOString()}`
 	);
 
-	const uniqueSiteIds = Array.from(
-		new Set(
-			scheduledPosts
-				.map((post) => post.blog?.netlifySiteId)
-				.filter((id): id is string => Boolean(id))
-		)
-	);
+	if (!DEV_MODE) {
+		const uniqueSiteIds = Array.from(
+			new Set(
+				scheduledPosts
+					.map((post) => post.blog?.netlifySiteId)
+					.filter((id): id is string => Boolean(id))
+			)
+		);
 
-	for (const siteId of uniqueSiteIds) {
-		try {
-			await triggerDeployWithRetry(siteId);
-		} catch (error) {
-			Logger.logToConsole(
-				`Failed to deploy site ${siteId} after retries: ${String(error)}`
-			);
-			await Logger.logToFile(error, 'error');
+		for (const siteId of uniqueSiteIds) {
+			try {
+				await triggerDeployWithRetry(siteId);
+			} catch (error) {
+				Logger.logToConsole(
+					`Failed to deploy site ${siteId} after retries: ${String(error)}`
+				);
+				await Logger.logToFile(error, 'error');
+			}
+		}
+	} else {
+		Logger.logToConsole(
+			'DEV_MODE is enabled; skipping Netlify deploys after publishing scheduled posts.'
+		);
+
+		for (const postId of postIds) {
+			try {
+				await postService.toMarkdownContent(postId);
+				Logger.logToConsole(
+					`Markdown export succeeded for published post ${postId} in DEV_MODE`
+				);
+			} catch (error) {
+				Logger.logToConsole(
+					`Failed to generate static page for post ${postId}: ${String(error)}`
+				);
+				await Logger.logToFile(error, 'error');
+			}
 		}
 	}
 };

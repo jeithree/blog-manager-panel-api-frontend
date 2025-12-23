@@ -1,4 +1,6 @@
 import prisma from '../prisma.ts';
+import fs from 'fs/promises';
+import path from 'path';
 import {PostStatus} from '@prisma/client';
 import RedisCache from '../lib/redisCache.ts';
 import * as netlifyService from './netlifyService.ts';
@@ -14,6 +16,7 @@ import {
 	UnauthorizedError,
 } from '../lib/appError.ts';
 import * as R2Service from './R2Service.ts';
+import {DEV_MODE} from '../configs/basics.ts';
 
 export const createPost = async (
 	userId: string,
@@ -290,23 +293,50 @@ export const updatePost = async (
 
 	const willPublish = nextStatus === PostStatus.PUBLISHED && !wasPublished;
 	if (willPublish && blog.netlifySiteId) {
-		try {
-			const deploy = await netlifyService.triggerRebuild(blog.netlifySiteId);
-			await netlifyService.waitForDeploy(deploy.id);
+		if (!DEV_MODE) {
+			try {
+				const deploy = await netlifyService.triggerRebuild(blog.netlifySiteId);
+				await netlifyService.waitForDeploy(deploy.id);
+				Logger.logToConsole(
+					`Post publish triggered Netlify deploy (site: ${blog.netlifySiteId}, deploy: ${deploy.id})`
+				);
+			} catch (error) {
+				Logger.logToConsole(
+					`Netlify deploy failed after publishing post ${postId}: ${String(
+						error
+					)}`
+				);
+				await Logger.logToFile(error, 'error');
+				throw new BadRequestError(
+					'Failed to trigger site deploy after publishing the post',
+					'DEPLOY_FAILED'
+				);
+			}
+		} else {
+			// this is only temporary cause I will run it locally
 			Logger.logToConsole(
-				`Post publish triggered Netlify deploy (site: ${blog.netlifySiteId}, deploy: ${deploy.id})`
+				`DEV_MODE is ON: Skipping Netlify deploy for published post ${postId}`
 			);
-		} catch (error) {
 			Logger.logToConsole(
-				`Netlify deploy failed after publishing post ${postId}: ${String(
-					error
-				)}`
+				`Performing to markdown export for published post ${postId} in DEV_MODE`
 			);
-			await Logger.logToFile(error, 'error');
-			throw new BadRequestError(
-				'Failed to trigger site deploy after publishing the post',
-				'DEPLOY_FAILED'
-			);
+			try {
+				await toMarkdownContent(postId);
+				Logger.logToConsole(
+					`Markdown export succeeded for published post ${postId} in DEV_MODE`
+				);
+			} catch (error) {
+				Logger.logToConsole(
+					`Markdown export failed for published post ${postId} in DEV_MODE: ${String(
+						error
+					)}`
+				);
+				await Logger.logToFile(error, 'error');
+				throw new BadRequestError(
+					'Failed to trigger site deploy after publishing the post',
+					'DEPLOY_FAILED'
+				);
+			}
 		}
 	}
 
@@ -399,6 +429,67 @@ export const getPostById = async (
 	}
 
 	return post;
+};
+
+export const toMarkdownContent = async (postId: string) => {
+	const post = await prisma.post.findUnique({
+		where: {id: postId},
+		include: {
+			category: true,
+			author: true,
+			tags: true,
+			blog: true,
+		},
+	});
+
+	if (!post) {
+		throw new NotFoundError('Post not found', 'POST_NOT_FOUND');
+	}
+
+	if (post.status !== PostStatus.PUBLISHED) {
+		await Logger.logToFile(
+			`Attempted to export non-published post ${postId} to markdown`,
+			'error'
+		);
+		return;
+	}
+
+	const tags = post.tags.map((tag) => `'${tag.name}'`).join(', ');
+	const pubDate = post.publishedAt
+		? post.publishedAt.toISOString().split('T')[0]
+		: '';
+
+	const frontmatter = [
+		'---',
+		`title: '${post.title.replace(/'/g, "''")}'`,
+		`description: '${(post.description || '').replace(/'/g, "''")}'`,
+		`pubDate: '${pubDate}'`,
+		`category: '${post.category.name}'`,
+		`tags: [${tags}]`,
+		`author: '${post.author.name}'`,
+		`heroImage: '${post.imageUrl || ''}'`,
+		`draft: false`,
+		'---',
+		'',
+		'',
+	].join('\n');
+
+	const fileContent = frontmatter + (post.content || '');
+
+	let contentBaseDir = path.join(process.cwd(), 'content');
+	try {
+		await fs.access(contentBaseDir);
+	} catch {
+		contentBaseDir = path.join(process.cwd(), 'api', 'content');
+	}
+
+	const blogFolderName = post.blog.title.replace(/\s+/g, '');
+	const blogDir = path.join(contentBaseDir, blogFolderName);
+
+	await fs.mkdir(blogDir, {recursive: true});
+
+	const filePath = path.join(blogDir, `${post.slug}.md`);
+	await fs.writeFile(filePath, fileContent, 'utf-8');
 };
 
 // Public Service Functions

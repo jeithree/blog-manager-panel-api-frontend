@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {useRouter} from 'next/navigation';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -21,7 +21,7 @@ import {categoryService, type Category} from '@/services/category';
 import {tagService, type Tag} from '@/services/tag';
 import {blogService, type Blog} from '@/services/blog';
 import {authorService, type Author} from '@/services/author';
-import { Textarea } from '@/components/ui/textarea';
+import {Textarea} from '@/components/ui/textarea';
 
 type Step = 'blog' | 'title' | 'content' | 'details' | 'publish';
 const stepOrder: Step[] = ['blog', 'title', 'content', 'details', 'publish'];
@@ -57,26 +57,7 @@ export default function CreatePostPage() {
 	const [publishDate, setPublishDate] = useState<string>('');
 	const [selectedAuthorId, setSelectedAuthorId] = useState('');
 
-	// Load blogs on mount
-	useEffect(() => {
-		loadBlogs();
-	}, []);
-
-	useEffect(() => {
-		if (selectedBlogId) {
-			setSelectedAuthorId('');
-			loadCategoriesTagsAndAuthors();
-		}
-	}, [selectedBlogId]);
-
-	// Auto-process generated tags when they're available
-	useEffect(() => {
-		if (generatedTags.length > 0 && currentStep === 'details') {
-			saveTags();
-		}
-	}, [currentStep, generatedTags.length]);
-
-	const loadBlogs = async () => {
+	const loadBlogs = useCallback(async () => {
 		try {
 			const response = await blogService.getBlogs();
 			if (response.success && response.data) {
@@ -88,9 +69,9 @@ export default function CreatePostPage() {
 		} catch (error) {
 			console.error('Failed to load blogs:', error);
 		}
-	};
+	}, [selectedBlogId]);
 
-	const loadCategoriesTagsAndAuthors = async () => {
+	const loadCategoriesTagsAndAuthors = useCallback(async () => {
 		try {
 			const [categoriesRes, tagsRes, authorsRes] = await Promise.all([
 				categoryService.getCategories({blogId: selectedBlogId}),
@@ -113,7 +94,67 @@ export default function CreatePostPage() {
 		} catch (error) {
 			console.error('Failed to load categories, tags, and authors:', error);
 		}
-	};
+	}, [selectedAuthorId, selectedBlogId]);
+
+	const saveTags = useCallback(async () => {
+		if (generatedTags.length === 0) return;
+
+		const newTagIds: string[] = [];
+
+		for (const tagName of generatedTags) {
+			// Check if tag already exists
+			const existingTag = tags.find(
+				(t) => t.name.toLowerCase() === tagName.toLowerCase()
+			);
+
+			if (existingTag) {
+				newTagIds.push(existingTag.id);
+			} else {
+				// Create new tag
+				try {
+					const response = await tagService.createTag({
+						name: tagName,
+						blogId: selectedBlogId,
+					});
+
+					if (response.success && response.data) {
+						newTagIds.push(response.data.id);
+						setTags((prev) => [...prev, response.data!]);
+					}
+				} catch (error) {
+					console.error(`Failed to create tag: ${tagName}`, error);
+				}
+			}
+		}
+
+		// Add generated tag IDs without duplicates
+		setSelectedTagIds((prev) => {
+			const combined = [...prev, ...newTagIds];
+			return [...new Set(combined)];
+		});
+
+		// Clear generated tags after processing
+		setGeneratedTags([]);
+	}, [generatedTags, selectedBlogId, tags]);
+
+	// Load blogs on mount
+	useEffect(() => {
+		loadBlogs();
+	}, [loadBlogs]);
+
+	useEffect(() => {
+		if (selectedBlogId) {
+			setSelectedAuthorId('');
+			loadCategoriesTagsAndAuthors();
+		}
+	}, [loadCategoriesTagsAndAuthors, selectedBlogId]);
+
+	// Auto-process generated tags when they're available
+	useEffect(() => {
+		if (generatedTags.length > 0 && currentStep === 'details') {
+			void saveTags();
+		}
+	}, [currentStep, generatedTags, saveTags]);
 
 	const generateTitles = async () => {
 		if (!selectedBlogId) return;
@@ -181,47 +222,6 @@ export default function CreatePostPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
-
-	const saveTags = async () => {
-		if (generatedTags.length === 0) return;
-
-		const newTagIds: string[] = [];
-
-		for (const tagName of generatedTags) {
-			// Check if tag already exists
-			const existingTag = tags.find(
-				(t) => t.name.toLowerCase() === tagName.toLowerCase()
-			);
-
-			if (existingTag) {
-				newTagIds.push(existingTag.id);
-			} else {
-				// Create new tag
-				try {
-					const response = await tagService.createTag({
-						name: tagName,
-						blogId: selectedBlogId,
-					});
-
-					if (response.success && response.data) {
-						newTagIds.push(response.data.id);
-						setTags((prev) => [...prev, response.data!]);
-					}
-				} catch (error) {
-					console.error(`Failed to create tag: ${tagName}`, error);
-				}
-			}
-		}
-
-		// Add generated tag IDs without duplicates
-		setSelectedTagIds((prev) => {
-			const combined = [...prev, ...newTagIds];
-			return [...new Set(combined)];
-		});
-
-		// Clear generated tags after processing
-		setGeneratedTags([]);
 	};
 
 	const handlePublish = async (status: PostStatus) => {

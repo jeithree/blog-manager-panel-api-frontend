@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import Link from 'next/link';
 import {Button} from '@/components/ui/button';
 import {
@@ -33,20 +33,7 @@ export default function PostsPage() {
 	const [page, setPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(1);
 
-	// Load blogs on mount
-	useEffect(() => {
-		loadBlogs();
-	}, []);
-
-	// Load posts and filters when dependencies change
-	useEffect(() => {
-		if (blogId) {
-			loadPosts();
-			loadFilters();
-		}
-	}, [blogId, selectedCategoryId, selectedTagId, selectedStatus, page]);
-
-	const loadBlogs = async () => {
+	const loadBlogs = useCallback(async () => {
 		try {
 			const response = await blogService.getBlogs();
 			if (response.success && response.data) {
@@ -58,9 +45,9 @@ export default function PostsPage() {
 		} catch (error) {
 			console.error('Failed to load blogs:', error);
 		}
-	};
+	}, [blogId]);
 
-	const loadPosts = async () => {
+	const loadPosts = useCallback(async () => {
 		setIsLoading(true);
 		try {
 			const response = await postService.getPosts({
@@ -85,9 +72,16 @@ export default function PostsPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [
+		ALL_VALUE,
+		blogId,
+		page,
+		selectedCategoryId,
+		selectedStatus,
+		selectedTagId,
+	]);
 
-	const loadFilters = async () => {
+	const loadFilters = useCallback(async () => {
 		try {
 			const [categoriesRes, tagsRes] = await Promise.all([
 				categoryService.getCategories({blogId}),
@@ -103,7 +97,20 @@ export default function PostsPage() {
 		} catch (error) {
 			console.error('Failed to load filters:', error);
 		}
-	};
+	}, [blogId]);
+
+	// Load blogs on mount
+	useEffect(() => {
+		loadBlogs();
+	}, [loadBlogs]);
+
+	// Load posts and filters when dependencies change
+	useEffect(() => {
+		if (blogId) {
+			loadPosts();
+			loadFilters();
+		}
+	}, [blogId, loadFilters, loadPosts]);
 
 	const getStatusBadgeVariant = (status: PostStatus) => {
 		switch (status) {

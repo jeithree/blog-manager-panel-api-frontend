@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -41,17 +41,7 @@ export default function CategoriesTagsPage() {
 	const [newTagName, setNewTagName] = useState('');
 	const [isCreatingTag, setIsCreatingTag] = useState(false);
 
-	useEffect(() => {
-		loadBlogs();
-	}, []);
-
-	useEffect(() => {
-		if (blogId) {
-			loadData();
-		}
-	}, [blogId]);
-
-	const loadBlogs = async () => {
+	const loadBlogs = useCallback(async () => {
 		try {
 			const response = await blogService.getBlogs();
 			if (response.success && response.data) {
@@ -63,9 +53,9 @@ export default function CategoriesTagsPage() {
 		} catch (error) {
 			console.error('Failed to load blogs:', error);
 		}
-	};
+	}, [blogId]);
 
-	const loadData = async () => {
+	const loadData = useCallback(async () => {
 		setIsLoading(true);
 		try {
 			const [categoriesRes, tagsRes] = await Promise.all([
@@ -84,7 +74,17 @@ export default function CategoriesTagsPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [blogId]);
+
+	useEffect(() => {
+		loadBlogs();
+	}, [loadBlogs]);
+
+	useEffect(() => {
+		if (blogId) {
+			loadData();
+		}
+	}, [blogId, loadData]);
 
 	const handleCreateCategory = async () => {
 		if (!newCategoryName || !blogId) return;

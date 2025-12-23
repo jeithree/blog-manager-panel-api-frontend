@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {useRouter, useParams} from 'next/navigation';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -27,11 +27,7 @@ export default function EditBlogPage() {
 		R2CustomDomain: '',
 	});
 
-	useEffect(() => {
-		loadBlog();
-	}, [blogId]);
-
-	const loadBlog = async () => {
+	const loadBlog = useCallback(async () => {
 		setIsLoading(true);
 		try {
 			const response = await blogService.getBlog(blogId);
@@ -53,7 +49,11 @@ export default function EditBlogPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [blogId]);
+
+	useEffect(() => {
+		loadBlog();
+	}, [loadBlog]);
 
 	const handleChange = (field: string, value: string) => {
 		setFormData((prev) => ({...prev, [field]: value}));
@@ -172,11 +172,12 @@ export default function EditBlogPage() {
 						type="button"
 						variant="outline"
 						onClick={() => router.push('/dashboard/blogs')}
-						disabled={isSaving}
-					>
+						disabled={isSaving}>
 						Cancel
 					</Button>
-					<Button type="submit" disabled={isSaving}>
+					<Button
+						type="submit"
+						disabled={isSaving}>
 						{isSaving ? 'Saving...' : 'Save Changes'}
 					</Button>
 				</div>
