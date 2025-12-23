@@ -87,14 +87,12 @@ export default function CreatePostPage() {
 			}
 			if (authorsRes.success && authorsRes.data) {
 				setAuthors(authorsRes.data);
-				if (!selectedAuthorId && authorsRes.data.length > 0) {
-					setSelectedAuthorId(authorsRes.data[0].id);
-				}
+				setSelectedAuthorId(authorsRes.data[0]?.id || '');
 			}
 		} catch (error) {
 			console.error('Failed to load categories, tags, and authors:', error);
 		}
-	}, [selectedAuthorId, selectedBlogId]);
+	}, [selectedBlogId]);
 
 	const saveTags = useCallback(async () => {
 		if (generatedTags.length === 0) return;
@@ -144,7 +142,6 @@ export default function CreatePostPage() {
 
 	useEffect(() => {
 		if (selectedBlogId) {
-			setSelectedAuthorId('');
 			loadCategoriesTagsAndAuthors();
 		}
 	}, [loadCategoriesTagsAndAuthors, selectedBlogId]);

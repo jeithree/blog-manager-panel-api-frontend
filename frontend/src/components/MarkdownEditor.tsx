@@ -26,10 +26,11 @@ export function MarkdownEditor({
 		let inCodeBlock = false;
 		let inList = false;
 		let listType: 'ul' | 'ol' | null = null;
+		let lastListItemIndex: number | null = null;
 		let codeBlockContent: string[] = [];
 
 		for (let i = 0; i < lines.length; i++) {
-			let line = lines[i];
+			const line = lines[i];
 
 			// Handle code blocks
 			if (line.trim().startsWith('```')) {
@@ -43,8 +44,10 @@ export function MarkdownEditor({
 					inCodeBlock = false;
 				} else {
 					if (inList) {
-						htmlLines.push('</ul>');
+						htmlLines.push(`</${listType}>`);
 						inList = false;
+						listType = null;
+						lastListItemIndex = null;
 					}
 					inCodeBlock = true;
 				}
@@ -59,8 +62,10 @@ export function MarkdownEditor({
 			// Headers - close list if open
 			if (line.match(/^# /)) {
 				if (inList) {
-					htmlLines.push('</ul>');
+					htmlLines.push(`</${listType}>`);
 					inList = false;
+					listType = null;
+					lastListItemIndex = null;
 				}
 				htmlLines.push(
 					`<h1 class="text-4xl font-bold text-gray-900 mt-8 mb-4 leading-tight">${line.substring(
@@ -69,8 +74,10 @@ export function MarkdownEditor({
 				);
 			} else if (line.match(/^## /)) {
 				if (inList) {
-					htmlLines.push('</ul>');
+					htmlLines.push(`</${listType}>`);
 					inList = false;
+					listType = null;
+					lastListItemIndex = null;
 				}
 				htmlLines.push(
 					`<h2 class="text-3xl font-bold text-gray-900 mt-8 mb-4 leading-tight">${line.substring(
@@ -82,6 +89,7 @@ export function MarkdownEditor({
 					htmlLines.push(`</${listType}>`);
 					inList = false;
 					listType = null;
+					lastListItemIndex = null;
 				}
 				htmlLines.push(
 					`<h3 class="text-2xl font-bold text-gray-900 mt-6 mb-3 leading-tight">${line.substring(
@@ -102,6 +110,7 @@ export function MarkdownEditor({
 				htmlLines.push(
 					`<li class="leading-relaxed">${processInlineMarkdown(content)}</li>`
 				);
+				lastListItemIndex = htmlLines.length - 1;
 			}
 			// Ordered lists
 			else if (line.match(/^\d+\. /)) {
@@ -116,13 +125,70 @@ export function MarkdownEditor({
 				htmlLines.push(
 					`<li class="leading-relaxed">${processInlineMarkdown(content)}</li>`
 				);
+				lastListItemIndex = htmlLines.length - 1;
 			}
-			// Blank lines
+			// Nested list items (indented - or *) -> append as nested ul inside last li
+			else if (
+				line.match(/^\s+[-*]\s+/) &&
+				inList &&
+				lastListItemIndex !== null
+			) {
+				const nestedContent = line.trim().substring(2);
+				// insert nested ul before closing </li>
+				const prev = htmlLines[lastListItemIndex];
+				const insertPos = prev.lastIndexOf('</li>');
+				if (insertPos !== -1) {
+					const before = prev.substring(0, insertPos);
+					const after = prev.substring(insertPos);
+					const nested = `<ul class="list-disc pl-6 my-2"><li class="leading-relaxed">${processInlineMarkdown(
+						nestedContent
+					)}</li></ul>`;
+					htmlLines[lastListItemIndex] = before + nested + after;
+				} else {
+					// fallback: push nested as separate block
+					htmlLines.push(
+						`<ul class="list-disc pl-6 my-2"><li class="leading-relaxed">${processInlineMarkdown(
+							nestedContent
+						)}</li></ul>`
+					);
+				}
+			}
+			// Continuation lines (indented) are appended to previous list item
+			else if (/^\s{2,}\S/.test(line) && inList && lastListItemIndex !== null) {
+				const cont = line.trim();
+				const prev = htmlLines[lastListItemIndex];
+				const insertPos = prev.lastIndexOf('</li>');
+				if (insertPos !== -1) {
+					const before = prev.substring(0, insertPos);
+					const after = prev.substring(insertPos);
+					const addition = `<div class="mt-2 text-muted-foreground">${processInlineMarkdown(
+						cont
+					)}</div>`;
+					htmlLines[lastListItemIndex] = before + addition + after;
+				} else {
+					htmlLines[lastListItemIndex] =
+						prev + `<div>${processInlineMarkdown(cont)}</div>`;
+				}
+			}
+			// Blank lines: close list only if next non-empty line is not a list item or continuation
 			else if (line.trim() === '') {
 				if (inList) {
-					htmlLines.push(`</${listType}>`);
-					inList = false;
-					listType = null;
+					// lookahead to find next non-empty line
+					let j = i + 1;
+					while (j < lines.length && lines[j].trim() === '') j++;
+					const next = j < lines.length ? lines[j] : null;
+					const nextIsListItem =
+						next &&
+						(next.match(/^\d+\. /) ||
+							next.match(/^[-*] /) ||
+							next.match(/^\s+[-*]\s+/) ||
+							/^\s{2,}\S/.test(next));
+					if (!nextIsListItem) {
+						htmlLines.push(`</${listType}>`);
+						inList = false;
+						listType = null;
+						lastListItemIndex = null;
+					}
 				}
 				// Don't add extra spacing
 			}

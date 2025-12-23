@@ -12,7 +12,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import Image from 'next/image';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Badge} from '@/components/ui/badge';
 import {MarkdownEditor} from '@/components/MarkdownEditor';
@@ -346,7 +345,7 @@ export default function EditPostPage() {
 							<Label htmlFor="image">Featured Image</Label>
 							{post.imageUrl && !imageFile && (
 								<div className="mb-2">
-									<Image
+									<img
 										src={post.imageUrl}
 										alt="Current featured image"
 										className="max-w-xs rounded-md"
