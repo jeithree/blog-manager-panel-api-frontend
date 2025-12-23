@@ -92,6 +92,8 @@ export const createPost = async (
 						connect: tagIds.map((id) => ({id})),
 				  }
 				: undefined,
+			status: postData.status,
+			publishedAt: postData.publishedAt,
 		},
 		include: {
 			category: true,
@@ -102,6 +104,30 @@ export const createPost = async (
 
 	await RedisCache.deleteByPattern(`public:posts:${blog.id}:*`);
 	await RedisCache.deleteByPattern(`public:post:${blog.id}:*`);
+
+	const willPublish = postData.status === PostStatus.PUBLISHED;
+	if (willPublish && blog.netlifySiteId) {
+		if (!DEV_MODE) {
+			try {
+				const deploy = await netlifyService.triggerRebuild(blog.netlifySiteId);
+				await netlifyService.waitForDeploy(deploy.id);
+				Logger.logToConsole(
+					`Post publish triggered Netlify deploy (site: ${blog.netlifySiteId}, deploy: ${deploy.id})`
+				);
+			} catch (error) {
+				Logger.logToConsole(
+					`Netlify deploy failed after publishing post ${post.id}: ${String(
+						error
+					)}`
+				);
+				await Logger.logToFile(error, 'error');
+				throw new BadRequestError(
+					'Failed to trigger site deploy after publishing the post',
+					'DEPLOY_FAILED'
+				);
+			}
+		}
+	}
 
 	return post;
 };
@@ -247,7 +273,7 @@ export const updatePost = async (
 		if (imageUrl) {
 			imageUrl = `${blog.R2CustomDomain}/${imageUrl}`;
 			// delete old image from R2
-			if (post.imageUrl) {
+			if (post.imageUrl && post.imageUrl != imageUrl) {
 				await R2Service.deleteImageFromR2(
 					blog.R2BucketName,
 					post.imageUrl.replace(`${blog.R2CustomDomain}/`, '')
@@ -303,31 +329,6 @@ export const updatePost = async (
 			} catch (error) {
 				Logger.logToConsole(
 					`Netlify deploy failed after publishing post ${postId}: ${String(
-						error
-					)}`
-				);
-				await Logger.logToFile(error, 'error');
-				throw new BadRequestError(
-					'Failed to trigger site deploy after publishing the post',
-					'DEPLOY_FAILED'
-				);
-			}
-		} else {
-			// this is only temporary cause I will run it locally
-			Logger.logToConsole(
-				`DEV_MODE is ON: Skipping Netlify deploy for published post ${postId}`
-			);
-			Logger.logToConsole(
-				`Performing to markdown export for published post ${postId} in DEV_MODE`
-			);
-			try {
-				await toMarkdownContent(postId);
-				Logger.logToConsole(
-					`Markdown export succeeded for published post ${postId} in DEV_MODE`
-				);
-			} catch (error) {
-				Logger.logToConsole(
-					`Markdown export failed for published post ${postId} in DEV_MODE: ${String(
 						error
 					)}`
 				);

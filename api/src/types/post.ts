@@ -22,22 +22,21 @@ export const createPostSchema = z.object({
 	description: z
 		.string()
 		.min(1, 'Description is required')
-		.max(500, 'Description must be at most 500 characters')
-		.optional(),
+		.max(500, 'Description must be at most 500 characters'),
 	slug: z
 		.string()
 		.min(1, 'Slug is required')
 		.max(150, 'Slug must be at most 150 characters'),
-	imageUrl: z.string().min(1, 'Image URL is required').optional(),
-	content: z.string().min(1, 'Content is required').optional(),
+	imageUrl: z.string().min(1, 'Image URL is required'),
+	content: z.string().min(1, 'Content is required'),
 	categoryId: z.string().min(1, 'Category ID is required'),
 	authorId: z.string().min(1, 'Author ID is required'),
-	tagIds: z
-		.preprocess(
-			parseArrayField,
-			z.array(z.string().min(1, 'Tag ID is required'))
-		)
-		.optional(),
+	tagIds: z.preprocess(
+		parseArrayField,
+		z.array(z.string().min(1, 'Tag ID is required'))
+	),
+	status: z.enum(PostStatus),
+	publishedAt: z.coerce.date(),
 });
 
 export type CreatePostDto = z.infer<typeof createPostSchema>;
@@ -46,7 +45,7 @@ export const getPostsQuerySchema = z.object({
 	blogId: z.string().min(1, 'Blog ID is required'),
 	categoryId: z.string().min(1, 'Category ID is required').optional(),
 	tagId: z.string().min(1, 'Tag ID is required').optional(),
-    status: z.enum(PostStatus).optional(),
+	status: z.enum(PostStatus).optional(),
 	page: z.coerce.number().int().min(1).default(1),
 	pageSize: z.coerce.number().int().min(1).max(100).default(10),
 });

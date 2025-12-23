@@ -117,6 +117,26 @@ export const deletePost = async (
 	}
 };
 
+export const exportPostMarkdown = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const userId = req.session.userId as string;
+		const postId = req.params.postId as string;
+		const query = req.query as unknown as GetPostByIdQueryDto;
+		const blogId = query.blogId as string;
+
+		await postService.getPostById(userId, blogId, postId);
+		await postService.toMarkdownContent(postId);
+
+		return res.status(200).json(successResponse('Markdown export triggered'));
+	} catch (error) {
+		return next(error);
+	}
+};
+
 // Public Controllers
 
 export const getPublicPosts = async (

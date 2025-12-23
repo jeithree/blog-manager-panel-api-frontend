@@ -143,6 +143,18 @@ export const postService = {
 		return response.json();
 	},
 
+	async exportPostMarkdown(postId: string, blogId: string) {
+		const response = await fetch(
+			`${API_URL}/api/v1/posts/${postId}/markdown?blogId=${blogId}`,
+			{
+				method: 'POST',
+				credentials: 'include',
+			}
+		);
+
+		return response.json();
+	},
+
 	async deletePost(postId: string) {
 		const response = await fetch(`${API_URL}/api/v1/posts/${postId}`, {
 			method: 'DELETE',

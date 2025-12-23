@@ -53,6 +53,7 @@ export default function EditPostPage() {
 	const [showEditDialog, setShowEditDialog] = useState(false);
 	const [editRequest, setEditRequest] = useState('');
 	const [isGenerating, setIsGenerating] = useState(false);
+	const [isExporting, setIsExporting] = useState(false);
 
 	const loadPost = useCallback(async () => {
 		setIsLoading(true);
@@ -135,6 +136,7 @@ export default function EditPostPage() {
 
 		setIsSaving(true);
 		try {
+			const publishAtDate = publishDate ? new Date(publishDate) : undefined;
 			const updateData = {
 				blogId: post.blogId,
 				title,
@@ -144,10 +146,7 @@ export default function EditPostPage() {
 				categoryId,
 				tagIds: selectedTagIds,
 				...(status && {status}),
-				...(status === PostStatus.SCHEDULED &&
-					publishDate && {
-						publishedAt: new Date(publishDate),
-					}),
+				...(publishAtDate && {publishedAt: publishAtDate}),
 			};
 
 			const response = await postService.updatePost(
@@ -163,6 +162,29 @@ export default function EditPostPage() {
 			console.error('Failed to save post:', error);
 		} finally {
 			setIsSaving(false);
+		}
+	};
+
+	const handleExportMarkdown = async () => {
+		if (!post) return;
+
+		setIsExporting(true);
+		try {
+			const response = await postService.exportPostMarkdown(
+				post.id,
+				post.blogId
+			);
+			if (!response.success) {
+				console.error('Markdown export failed', response.error);
+			} else {
+				alert(
+					'Markdown export triggered – check the content folder once it completes.'
+				);
+			}
+		} catch (error) {
+			console.error('Failed to export markdown:', error);
+		} finally {
+			setIsExporting(false);
 		}
 	};
 
@@ -414,6 +436,12 @@ export default function EditPostPage() {
 							</Button>
 						</>
 					)}
+					<Button
+						variant="outline"
+						onClick={handleExportMarkdown}
+						disabled={!isPublished || isExporting}>
+						{isExporting ? 'Exporting...' : 'Export Markdown'}
+					</Button>
 				</div>
 			</div>
 

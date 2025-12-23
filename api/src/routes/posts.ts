@@ -29,6 +29,13 @@ router.get(
 	postController.getPostById
 );
 
+router.post(
+	'/:postId/markdown',
+	isAuthenticated,
+	validateQuery(getPostByIdQuerySchema),
+	postController.exportPostMarkdown
+);
+
 router.patch(
 	'/:postId',
 	isAuthenticated,
