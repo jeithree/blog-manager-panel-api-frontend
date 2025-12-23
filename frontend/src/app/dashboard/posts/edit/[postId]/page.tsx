@@ -39,6 +39,7 @@ export default function EditPostPage() {
 	const [tags, setTags] = useState<Tag[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
+	const [isDeleting, setIsDeleting] = useState(false);
 
 	const [title, setTitle] = useState('');
 	const [description, setDescription] = useState('');
@@ -166,7 +167,28 @@ export default function EditPostPage() {
 		}
 	};
 
+	const handleDelete = async () => {
+		if (!post || post.status !== PostStatus.DRAFT) return;
+		const confirmed = window.confirm(
+			'Delete this draft? This action cannot be undone.'
+		);
+		if (!confirmed) return;
+
+		setIsDeleting(true);
+		try {
+			const response = await postService.deletePost(post.id);
+			if (response.success) {
+				router.push('/dashboard/posts');
+			}
+		} catch (error) {
+			console.error('Failed to delete post:', error);
+		} finally {
+			setIsDeleting(false);
+		}
+	};
+
 	const isPublished = post?.status === PostStatus.PUBLISHED;
+	const isDraft = post?.status === PostStatus.DRAFT;
 
 	if (isLoading) {
 		return (
@@ -358,6 +380,14 @@ export default function EditPostPage() {
 						disabled={isSaving}>
 						Cancel
 					</Button>
+					{isDraft && (
+						<Button
+							variant="destructive"
+							onClick={handleDelete}
+							disabled={isSaving || isDeleting}>
+							{isDeleting ? 'Deleting...' : 'Delete Draft'}
+						</Button>
+					)}
 					{isPublished ? (
 						<Button
 							onClick={() => handleSave()}

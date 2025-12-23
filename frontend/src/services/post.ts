@@ -24,7 +24,7 @@ export type Post = {
 	tags?: {id: string; name: string}[];
 	category?: {id: string; name: string};
 	author?: {id: string; name: string};
-}
+};
 
 export type CreatePostData = {
 	blogId: string;
@@ -36,7 +36,7 @@ export type CreatePostData = {
 	categoryId: string;
 	authorId: string;
 	tagIds?: string[];
-}
+};
 
 export type UpdatePostData = {
 	blogId: string;
@@ -50,16 +50,16 @@ export type UpdatePostData = {
 	tagIds?: string[];
 	status?: PostStatus;
 	publishedAt?: Date;
-}
+};
 
 export type GetPostsParams = {
 	blogId: string;
 	categoryId?: string;
 	tagId?: string;
-    status?: PostStatus;
+	status?: PostStatus;
 	page?: number;
 	pageSize?: number;
-}
+};
 
 export type PostsResponse = {
 	posts: Post[];
@@ -67,7 +67,7 @@ export type PostsResponse = {
 	page: number;
 	pageSize: number;
 	totalPages: number;
-}
+};
 
 export const postService = {
 	async createPost(data: CreatePostData, imageFile?: File) {
@@ -137,6 +137,15 @@ export const postService = {
 		const response = await fetch(`${API_URL}/api/v1/posts/${postId}`, {
 			method: 'PATCH',
 			body: formData,
+			credentials: 'include',
+		});
+
+		return response.json();
+	},
+
+	async deletePost(postId: string) {
+		const response = await fetch(`${API_URL}/api/v1/posts/${postId}`, {
+			method: 'DELETE',
 			credentials: 'include',
 		});
 

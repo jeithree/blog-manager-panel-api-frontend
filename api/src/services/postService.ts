@@ -343,6 +343,33 @@ export const updatePost = async (
 	return updatedPost;
 };
 
+export const deletePost = async (userId: string, postId: string) => {
+	const post = await prisma.post.findFirst({
+		where: {id: postId, status: PostStatus.DRAFT},
+		select: {blogId: true},
+	});
+
+	if (!post) {
+		throw new NotFoundError('Post not found', 'POST_NOT_FOUND');
+	}
+
+	const blog = await prisma.blog.findFirst({
+		where: {id: post.blogId, userId},
+		select: {id: true},
+	});
+
+	if (!blog) {
+		throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+	}
+
+	await prisma.post.delete({
+		where: {id: postId},
+	});
+
+	await RedisCache.deleteByPattern(`public:posts:${post.blogId}:*`);
+	await RedisCache.deleteByPattern(`public:post:${post.blogId}:*`);
+};
+
 export const getPosts = async (
 	userId: string,
 	{blogId, categoryId, tagId, status, page = 1, pageSize = 10}: GetPostsQueryDto

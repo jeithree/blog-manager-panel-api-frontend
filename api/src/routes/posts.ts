@@ -38,6 +38,8 @@ router.patch(
 	postController.updatePost
 );
 
+router.delete('/:postId', isAuthenticated, postController.deletePost);
+
 router.post(
 	'/',
 	isAuthenticated,

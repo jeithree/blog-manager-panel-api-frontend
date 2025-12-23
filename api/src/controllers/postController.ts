@@ -41,7 +41,7 @@ export const getPosts = async (
 			blogId,
 			categoryId,
 			tagId,
-            status,
+			status,
 			page,
 			pageSize,
 		});
@@ -96,6 +96,22 @@ export const updatePost = async (
 		return res
 			.status(200)
 			.json(successResponse('Post updated successfully', post));
+	} catch (error) {
+		return next(error);
+	}
+};
+
+export const deletePost = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const userId = req.session.userId as string;
+		const postId = req.params.postId as string;
+		await postService.deletePost(userId, postId);
+
+		return res.status(200).json(successResponse('Post deleted successfully'));
 	} catch (error) {
 		return next(error);
 	}
