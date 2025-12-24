@@ -12,8 +12,14 @@ Create the blog post (1000–1200 words) in MD format. Use ##, ###, and any MD s
 # Markdown link rules:
 - Always use standard inline links: [anchor text](URL).
 - Keep anchor text descriptive and concise; do not use raw URLs or reference-style links.
-- Use 1–3 internal links only when they fit naturally. If none fit, skip them.
+- Use 1–3 internal links only when they fit naturally. If none fit, skip them, never repeat links.
 - Use multiple ## headings for main sections. Only use ### when a subsection is clearly nested under a main section.
+
+# Rules:
+- Dont mention "practical" or "story" in the post description, unless necessary.
+- Dont ask for comments or feedback in the post, dont offer downloads, cause the blog doesnt have comment section.
+- NEVER add the same internal link more than once.
+- Ensure the post is SEO-optimized with relevant keywords naturally integrated.
 
 # Category it belongs to:
 {{CATEGORY PLACEHOLDER}}
@@ -23,7 +29,7 @@ Create the blog post (1000–1200 words) in MD format. Use ##, ###, and any MD s
 
 (You can include tags from the existing ones or you can create new ones, but keep them relevant to the post content and to a maximum of 4 tags.)
 
-# Already published posts that you can use for internal linking (DO NOT use more than 3 ever):
+# Already published posts that you can use for internal linking (DO NOT use more than 3 ever, and never repeat links):
 {{POSTS PLACEHOLDER}}
 
 (Use 1–3 internal links total. Select only the most relevant from the list; if fewer than 1–3 fit naturally, include fewer.)

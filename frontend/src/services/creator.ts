@@ -32,11 +32,7 @@ export type GeneratePostEditData = {
 export type GeneratePostEdit = {
 	blogId: string;
 	postId: string;
-	title: string;
-	description: string;
-	slug: string;
 	content: string;
-	tags: string[];
 };
 
 export type GenerateImagePromptData = {

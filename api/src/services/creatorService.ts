@@ -284,18 +284,10 @@ export const generatePostEdit = async (
 
 	let promptTemplate = await getPromptTemplate('post-edit');
 
-	const currentPost = {
-		title: post.title,
-		description: post.description ?? '',
-		content: post.content ?? '',
-		slug: post.slug,
-		tags: post.tags.map((tag) => tag.name),
-	};
-
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
-		'{{CURRENT_POST_JSON}}',
-		JSON.stringify(currentPost, null, 2)
+		'{{CURRENT_POST_CONTENT}}',
+		post.content ?? ''
 	);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
@@ -306,11 +298,7 @@ export const generatePostEdit = async (
 	console.log('Prompt Template:\n', promptTemplate);
 
 	const PostEditSchema = z.object({
-		title: z.string(),
-		description: z.string(),
 		content: z.string(),
-		slug: z.string(),
-		tags: z.array(z.string()),
 	});
 
 	const client = new OpenAI();

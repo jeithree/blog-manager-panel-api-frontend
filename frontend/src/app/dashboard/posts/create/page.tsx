@@ -42,7 +42,6 @@ export default function CreatePostPage() {
 		{category: string; titles: string[]; categoryId: string | null}[]
 	>([]);
 	const [selectedTitle, setSelectedTitle] = useState('');
-	const [selectedTitleCategory, setSelectedTitleCategory] = useState('');
 	const [customTitle, setCustomTitle] = useState('');
 
 	const [selectedCategoryId, setSelectedCategoryId] = useState('');
@@ -338,7 +337,6 @@ export default function CreatePostPage() {
 										}`}
 										onClick={() => {
 											setSelectedTitle(title);
-											setSelectedTitleCategory(categoryGroup.categoryId || '');
 											setSelectedCategoryId(categoryGroup.categoryId || '');
 											setCustomTitle('');
 										}}>
@@ -359,7 +357,6 @@ export default function CreatePostPage() {
 						onChange={(e) => {
 							setCustomTitle(e.target.value);
 							setSelectedTitle('');
-							setSelectedTitleCategory('');
 						}}
 					/>
 					{customTitle && (
