@@ -12,7 +12,7 @@ Apply the requested changes to the blog post below.
 - Do NOT change internal links unless requested
 
 # Post content
-{{CURRENT_POST_CONTENT}}
+{{CURRENT_POST_CONTENT_PLACEHOLDER}}
 
 # Change request
-{{CHANGE_REQUEST}}
+{{CHANGE_REQUEST_PLACEHOLDER}}

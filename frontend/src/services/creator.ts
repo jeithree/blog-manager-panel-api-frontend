@@ -37,6 +37,7 @@ export type GeneratePostEdit = {
 
 export type GenerateImagePromptData = {
 	blogPost: string;
+	blogId: string;
 };
 
 export const creatorService = {

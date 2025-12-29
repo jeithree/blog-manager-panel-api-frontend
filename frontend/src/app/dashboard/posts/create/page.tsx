@@ -216,6 +216,7 @@ export default function CreatePostPage() {
 		try {
 			const response = await creatorService.generateImagePrompt({
 				blogPost: content,
+				blogId: selectedBlogId,
 			});
 
 			if (response.success && response.data) {

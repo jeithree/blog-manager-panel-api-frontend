@@ -181,7 +181,7 @@ export default function PromptsPage() {
 			<Dialog
 				open={showDialog}
 				onOpenChange={setShowDialog}>
-				<DialogContent>
+				<DialogContent className="max-h-[80vh] overflow-auto">
 					<DialogHeader>
 						<DialogTitle>
 							{editing ? 'Edit Prompt' : 'Create Prompt'}
@@ -198,6 +198,7 @@ export default function PromptsPage() {
 						<div className="space-y-2">
 							<Label>Content</Label>
 							<Textarea
+								className="max-h-96 overflow-auto"
 								value={content}
 								onChange={(e) => setContent(e.target.value)}
 							/>

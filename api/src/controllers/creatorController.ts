@@ -63,8 +63,11 @@ export const generateImagePrompt = async (
 	next: NextFunction
 ) => {
 	try {
-		const {blogPost} = req.body as GenerateImagePromptDto;
-		const imagePrompt = await creatorService.generateImagePrompt(blogPost);
+		const {blogPost, blogId} = req.body as GenerateImagePromptDto;
+		const imagePrompt = await creatorService.generateImagePrompt(
+			blogPost,
+			blogId
+		);
 
 		return res
 			.status(200)

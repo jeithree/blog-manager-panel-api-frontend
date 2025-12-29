@@ -1,4 +1,3 @@
-import fs from 'node:fs/promises';
 import prisma from '../prisma.ts';
 import OpenAI from 'openai';
 import {zodTextFormat} from 'openai/helpers/zod';
@@ -14,11 +13,18 @@ const getPromptTemplate = async (
 		| 'title-suggestions'
 		| 'post-creation'
 		| 'image-prompt-creation'
-		| 'post-edit'
+		| 'post-edit',
+	blogId: string
 ) => {
-	const filePath = `./src/prompts/${type}.txt`;
-	const template = await fs.readFile(filePath, 'utf-8');
-	return template;
+	const prompt = await prisma.prompt.findFirst({
+		where: {name: type, blogId},
+	});
+	if (prompt) return prompt.content;
+
+	throw new NotFoundError(
+		'Prompt template not found',
+		'PROMPT_TEMPLATE_NOT_FOUND'
+	);
 };
 
 const replacePlaceholder = (
@@ -61,7 +67,7 @@ export const generateTitleSuggestions = async (
 		.join('\n');
 
 	// Prepare prompt
-	let promptTemplate = await getPromptTemplate('title-suggestions');
+	let promptTemplate = await getPromptTemplate('title-suggestions', blogId);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{CATEGORIES LIST PLACEHOLDER}}',
@@ -112,10 +118,6 @@ export const generateTitleSuggestions = async (
 	}));
 
 	return titleSuggestions;
-
-	// return {
-	//     success: true,
-	// }
 };
 
 export const generatePostContent = async (
@@ -160,7 +162,7 @@ export const generatePostContent = async (
 		.join('\n');
 
 	// Prepare prompt
-	let promptTemplate = await getPromptTemplate('post-creation');
+	let promptTemplate = await getPromptTemplate('post-creation', blogId);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{CATEGORIES LIST PLACEHOLDER}}',
@@ -220,14 +222,10 @@ export const generatePostContent = async (
 	};
 
 	return post;
-	// return {
-	//     success: true,
-	// }
 };
 
-export const generateImagePrompt = async (blogPost: string) => {
-	// Prepare prompt
-	let promptTemplate = await getPromptTemplate('image-prompt-creation');
+export const generateImagePrompt = async (blogPost: string, blogId: string) => {
+	let promptTemplate = await getPromptTemplate('image-prompt-creation', blogId);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'[BLOG POST PLACEHOLDER]',
@@ -253,10 +251,6 @@ export const generateImagePrompt = async (blogPost: string) => {
 
 	const parsed = ImagePromptSchema.parse(JSON.parse(response.output_text));
 	return parsed.prompt;
-
-	// return {
-	//     success: true,
-	// }
 };
 
 export const generatePostEdit = async (
@@ -282,16 +276,16 @@ export const generatePostEdit = async (
 		throw new NotFoundError('Post not found', 'POST_NOT_FOUND');
 	}
 
-	let promptTemplate = await getPromptTemplate('post-edit');
+	let promptTemplate = await getPromptTemplate('post-edit', post.blogId);
 
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
-		'{{CURRENT_POST_CONTENT}}',
+		'{{CURRENT_POST_CONTENT_PLACEHOLDER}}',
 		post.content ?? ''
 	);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
-		'{{CHANGE_REQUEST}}',
+		'{{CHANGE_REQUEST_PLACEHOLDER}}',
 		changeRequest
 	);
 

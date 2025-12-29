@@ -22,5 +22,6 @@ export type GeneratePostEditDto = z.infer<typeof generatePostEditSchema>;
 
 export const generateImagePromptSchema = z.object({
 	blogPost: z.string().min(1, 'Blog post content is required'),
+	blogId: z.string().min(1, 'Blog ID is required'),
 });
 export type GenerateImagePromptDto = z.infer<typeof generateImagePromptSchema>;
