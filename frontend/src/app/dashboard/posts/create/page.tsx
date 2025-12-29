@@ -53,6 +53,8 @@ export default function CreatePostPage() {
 	const [slug, setSlug] = useState('');
 	const [imageFile, setImageFile] = useState<File | null>(null);
 	const [imagePrompt, setImagePrompt] = useState('');
+	const [copiedText, setCopiedText] = useState('');
+	const [copiedPrompt, setCopiedPrompt] = useState(false);
 	const [publishDate, setPublishDate] = useState<string>('');
 	const [selectedAuthorId, setSelectedAuthorId] = useState('');
 
@@ -220,6 +222,108 @@ export default function CreatePostPage() {
 		}
 	};
 
+	const copyTextToClipboard = async (text: string, isPrompt = false) => {
+		try {
+			await navigator.clipboard.writeText(text);
+			if (isPrompt) {
+				setCopiedPrompt(true);
+				setTimeout(() => setCopiedPrompt(false), 2000);
+			} else {
+				setCopiedText(text);
+				setTimeout(() => setCopiedText(''), 2000);
+			}
+		} catch (err) {
+			console.error('Copy failed', err);
+		}
+	};
+
+	const hasUnsavedChanges = useCallback(() => {
+		return Boolean(
+			selectedBlogId ||
+				customTitle ||
+				selectedTitle ||
+				content ||
+				description ||
+				slug ||
+				imageFile ||
+				imagePrompt ||
+				selectedCategoryId ||
+				selectedTagIds.length > 0 ||
+				selectedAuthorId
+		);
+	}, [
+		selectedBlogId,
+		selectedTitle,
+		customTitle,
+		content,
+		description,
+		slug,
+		imageFile,
+		imagePrompt,
+		selectedCategoryId,
+		selectedTagIds,
+		selectedAuthorId,
+	]);
+
+	useEffect(() => {
+		const onBeforeUnload = (e: BeforeUnloadEvent) => {
+			if (hasUnsavedChanges()) {
+				e.preventDefault();
+				// Chrome requires returnValue to be set
+				e.returnValue = '';
+			}
+		};
+
+		const onDocClick = (e: MouseEvent) => {
+			try {
+				const target = e.target as Element | null;
+				if (!target) return;
+				const anchor =
+					target.closest && (target.closest('a') as HTMLAnchorElement | null);
+				if (!anchor) return;
+				const href = anchor.getAttribute('href');
+				if (!href) return;
+				// ignore anchors that open in new tab or external links
+				if (anchor.target === '_blank') return;
+				if (href.startsWith('mailto:') || href.startsWith('tel:')) return;
+				const url = new URL(href, window.location.href);
+				if (url.origin !== window.location.origin) return;
+				if (hasUnsavedChanges()) {
+					const ok = window.confirm(
+						'You have unsaved changes. Leaving this page will discard them. Do you want to continue?'
+					);
+					if (!ok) {
+						e.preventDefault();
+						e.stopImmediatePropagation();
+					}
+				}
+			} catch (err) {
+				// ignore
+			}
+		};
+
+		const onPopState = (_e: PopStateEvent) => {
+			if (hasUnsavedChanges()) {
+				const ok = window.confirm(
+					'You have unsaved changes. Leaving this page will discard them. Do you want to continue?'
+				);
+				if (!ok) {
+					// re-add the current history entry to cancel navigation
+					history.pushState(null, '', window.location.href);
+				}
+			}
+		};
+
+		document.addEventListener('click', onDocClick, true);
+		window.addEventListener('popstate', onPopState);
+		window.addEventListener('beforeunload', onBeforeUnload);
+		return () => {
+			document.removeEventListener('click', onDocClick, true);
+			window.removeEventListener('popstate', onPopState);
+			window.removeEventListener('beforeunload', onBeforeUnload);
+		};
+	}, [hasUnsavedChanges]);
+
 	const handlePublish = async (status: PostStatus) => {
 		if (
 			!selectedBlogId ||
@@ -330,17 +434,31 @@ export default function CreatePostPage() {
 								{categoryGroup.titles.map((title, idx) => (
 									<div
 										key={idx}
-										className={`p-3 border rounded-md cursor-pointer transition ${
+										className={`p-3 border rounded-md transition ${
 											selectedTitle === title
 												? 'border-primary bg-primary/10'
-												: 'hover:border-primary/50'
-										}`}
-										onClick={() => {
-											setSelectedTitle(title);
-											setSelectedCategoryId(categoryGroup.categoryId || '');
-											setCustomTitle('');
-										}}>
-										{title}
+												: 'hover:border-primary/50 cursor-pointer'
+										}`}>
+										<div className="flex items-center justify-between gap-4">
+											<div
+												className="flex-1"
+												onClick={() => {
+													setSelectedTitle(title);
+													setSelectedCategoryId(categoryGroup.categoryId || '');
+													setCustomTitle('');
+												}}>
+												{title}
+											</div>
+											<Button
+												size="sm"
+												variant="outline"
+												onClick={(e) => {
+													e.stopPropagation();
+													copyTextToClipboard(title);
+												}}>
+												{copiedText === title ? 'Copied' : 'Copy'}
+											</Button>
+										</div>
 									</div>
 								))}
 							</div>
@@ -509,17 +627,30 @@ export default function CreatePostPage() {
 				<div className="space-y-2">
 					<div className="flex justify-between items-center">
 						<Label>Image Prompt (for AI generation)</Label>
-						<Button
-							size="sm"
-							variant="outline"
-							onClick={generateImagePromptFromContent}
-							disabled={isLoading}>
-							{isLoading ? 'Generating...' : 'Generate Prompt'}
-						</Button>
+						<div className="flex gap-2">
+							<Button
+								size="sm"
+								variant="outline"
+								onClick={generateImagePromptFromContent}
+								disabled={isLoading}>
+								{isLoading ? 'Generating...' : 'Generate Prompt'}
+							</Button>
+							{imagePrompt && (
+								<Button
+									size="sm"
+									variant="outline"
+									onClick={() => copyTextToClipboard(imagePrompt, true)}>
+									{copiedPrompt ? 'Copied' : 'Copy Prompt'}
+								</Button>
+							)}
+						</div>
 					</div>
 					<Textarea
 						value={imagePrompt}
-						onChange={(e) => setImagePrompt(e.target.value)}
+						onChange={(e) => {
+							setImagePrompt(e.target.value);
+							setCopiedPrompt(false);
+						}}
 						placeholder="Describe the image you want"
 					/>
 				</div>
@@ -573,8 +704,18 @@ export default function CreatePostPage() {
 						onClick={() => setCurrentStep('content')}>
 						Back
 					</Button>
-					<Button onClick={() => setCurrentStep('publish')}>Continue</Button>
+					<Button
+						onClick={() => setCurrentStep('publish')}
+						disabled={!imageFile && !imagePrompt}>
+						Continue
+					</Button>
 				</div>
+				{!imageFile && !imagePrompt && (
+					<p className="text-xs text-muted-foreground">
+						Please provide a featured image or an image prompt before
+						continuing.
+					</p>
+				)}
 			</CardContent>
 		</Card>
 	);
