@@ -5,6 +5,8 @@ export type Category = {
 	id: string;
 	name: string;
 	blogId: string;
+	slug: string;
+	description: string;
 	createdAt: string;
 	updatedAt: string;
 };
@@ -12,6 +14,8 @@ export type Category = {
 export type CreateCategoryData = {
 	name: string;
 	blogId: string;
+	slug: string;
+	description: string;
 };
 
 export type GetCategoriesParams = {
@@ -30,8 +34,6 @@ export const categoryService = {
 		const queryParams = new URLSearchParams(
 			Object.entries(params).filter(([, value]) => value !== undefined)
 		);
-		return apiFetch<Category[]>(
-			`${API_URL}/api/v1/categories?${queryParams}`
-		);
+		return apiFetch<Category[]>(`${API_URL}/api/v1/categories?${queryParams}`);
 	},
 };

@@ -111,9 +111,15 @@ export default function CreatePostPage() {
 			} else {
 				// Create new tag
 				try {
+					const slugified = tagName
+						.toLowerCase()
+						.replace(/[^a-z0-9]+/g, '-')
+						.replace(/^-+|-+$/g, '');
+
 					const response = await tagService.createTag({
 						name: tagName,
 						blogId: selectedBlogId,
+						slug: slugified,
 					});
 
 					if (response.success && response.data) {

@@ -72,7 +72,7 @@ export default function CreateBlogPage() {
 								value={formData.domain}
 								onChange={(e) => handleChange('domain', e.target.value)}
 								required
-								placeholder="myawesomeblog.com"
+								placeholder="https://myawesomeblog.com"
 							/>
 						</div>
 

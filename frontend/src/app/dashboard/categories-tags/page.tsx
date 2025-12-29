@@ -16,6 +16,7 @@ import {
 import {categoryService, type Category} from '@/services/category';
 import {tagService, type Tag} from '@/services/tag';
 import {blogService, type Blog} from '@/services/blog';
+import {Textarea} from '@/components/ui/textarea';
 import {
 	Select,
 	SelectContent,
@@ -34,11 +35,14 @@ export default function CategoriesTagsPage() {
 	// Category dialog
 	const [showCategoryDialog, setShowCategoryDialog] = useState(false);
 	const [newCategoryName, setNewCategoryName] = useState('');
+	const [newCategorySlug, setNewCategorySlug] = useState('');
+	const [newCategoryDescription, setNewCategoryDescription] = useState('');
 	const [isCreatingCategory, setIsCreatingCategory] = useState(false);
 
 	// Tag dialog
 	const [showTagDialog, setShowTagDialog] = useState(false);
 	const [newTagName, setNewTagName] = useState('');
+	const [newTagSlug, setNewTagSlug] = useState('');
 	const [isCreatingTag, setIsCreatingTag] = useState(false);
 
 	const loadBlogs = useCallback(async () => {
@@ -87,19 +91,23 @@ export default function CategoriesTagsPage() {
 	}, [blogId, loadData]);
 
 	const handleCreateCategory = async () => {
-		if (!newCategoryName || !blogId) return;
+		if (!newCategoryName || !blogId || !newCategorySlug) return;
 
 		setIsCreatingCategory(true);
 		try {
 			const response = await categoryService.createCategory({
 				name: newCategoryName,
 				blogId,
+				slug: newCategorySlug,
+				description: newCategoryDescription,
 			});
 
 			if (response.success && response.data) {
 				setCategories((prev) => [...prev, response.data!]);
 				setShowCategoryDialog(false);
 				setNewCategoryName('');
+				setNewCategorySlug('');
+				setNewCategoryDescription('');
 			}
 		} catch (error) {
 			console.error('Failed to create category:', error);
@@ -110,19 +118,21 @@ export default function CategoriesTagsPage() {
 	};
 
 	const handleCreateTag = async () => {
-		if (!newTagName || !blogId) return;
+		if (!newTagName || !blogId || !newTagSlug) return;
 
 		setIsCreatingTag(true);
 		try {
 			const response = await tagService.createTag({
 				name: newTagName,
 				blogId,
+				slug: newTagSlug,
 			});
 
 			if (response.success && response.data) {
 				setTags((prev) => [...prev, response.data!]);
 				setShowTagDialog(false);
 				setNewTagName('');
+				setNewTagSlug('');
 			}
 		} catch (error) {
 			console.error('Failed to create tag:', error);
@@ -257,6 +267,29 @@ export default function CategoriesTagsPage() {
 								}
 							/>
 						</div>
+						<div className="space-y-2">
+							<Label htmlFor="categorySlug">Slug</Label>
+							<Input
+								id="categorySlug"
+								value={newCategorySlug}
+								onChange={(e) => setNewCategorySlug(e.target.value)}
+								placeholder="enter-category-slug"
+								onKeyDown={(e) =>
+									e.key === 'Enter' &&
+									!isCreatingCategory &&
+									handleCreateCategory()
+								}
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="categoryDescription">Description</Label>
+							<Textarea
+								id="categoryDescription"
+								value={newCategoryDescription}
+								onChange={(e) => setNewCategoryDescription(e.target.value)}
+								placeholder="description for the category"
+							/>
+						</div>
 					</div>
 					<DialogFooter>
 						<Button
@@ -264,12 +297,16 @@ export default function CategoriesTagsPage() {
 							onClick={() => {
 								setShowCategoryDialog(false);
 								setNewCategoryName('');
+								setNewCategorySlug('');
+								setNewCategoryDescription('');
 							}}>
 							Cancel
 						</Button>
 						<Button
 							onClick={handleCreateCategory}
-							disabled={isCreatingCategory || !newCategoryName}>
+							disabled={
+								isCreatingCategory || !newCategoryName || !newCategorySlug
+							}>
 							{isCreatingCategory ? 'Creating...' : 'Create'}
 						</Button>
 					</DialogFooter>
@@ -297,6 +334,18 @@ export default function CategoriesTagsPage() {
 								}
 							/>
 						</div>
+						<div className="space-y-2">
+							<Label htmlFor="tagSlug">Slug</Label>
+							<Input
+								id="tagSlug"
+								value={newTagSlug}
+								onChange={(e) => setNewTagSlug(e.target.value)}
+								placeholder="enter-tag-slug"
+								onKeyDown={(e) =>
+									e.key === 'Enter' && !isCreatingTag && handleCreateTag()
+								}
+							/>
+						</div>
 					</div>
 					<DialogFooter>
 						<Button
@@ -304,12 +353,13 @@ export default function CategoriesTagsPage() {
 							onClick={() => {
 								setShowTagDialog(false);
 								setNewTagName('');
+								setNewTagSlug('');
 							}}>
 							Cancel
 						</Button>
 						<Button
 							onClick={handleCreateTag}
-							disabled={isCreatingTag || !newTagName}>
+							disabled={isCreatingTag || !newTagName || !newTagSlug}>
 							{isCreatingTag ? 'Creating...' : 'Create'}
 						</Button>
 					</DialogFooter>

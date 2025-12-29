@@ -5,18 +5,20 @@ export type Tag = {
 	id: string;
 	name: string;
 	blogId: string;
+	slug: string;
 	createdAt: string;
 	updatedAt: string;
-}
+};
 
 export type CreateTagData = {
 	name: string;
 	blogId: string;
-}
+	slug: string;
+};
 
 export type GetTagsParams = {
 	blogId: string;
-}
+};
 
 export const tagService = {
 	async createTag(data: CreateTagData) {
