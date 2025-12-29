@@ -9,6 +9,7 @@ import tagRoutes from './tags.ts';
 import authorRoutes from './authors.ts';
 import postRoutes from './posts.ts';
 import publicRoutes from './public.ts';
+import promptsRoutes from './prompts.ts';
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use('/creator', creatorRoutes);
 router.use('/tags', tagRoutes);
 router.use('/authors', authorRoutes);
 router.use('/posts', postRoutes);
+router.use('/prompts', promptsRoutes);
 
 export default router;

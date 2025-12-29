@@ -16,6 +16,7 @@ interface NavItem {
 const baseNavItems: NavItem[] = [
 	{title: 'Overview', href: '/dashboard'},
 	{title: 'Posts', href: '/dashboard/posts'},
+	{title: 'Prompts', href: '/dashboard/prompts'},
 	{title: 'Blogs', href: '/dashboard/blogs'},
 	{title: 'Categories & Tags', href: '/dashboard/categories-tags'},
 ];
