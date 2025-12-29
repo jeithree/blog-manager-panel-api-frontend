@@ -1,4 +1,5 @@
 import prisma from '../prisma.ts';
+import fs from 'node:fs/promises';
 import OpenAI from 'openai';
 import {zodTextFormat} from 'openai/helpers/zod';
 import {z} from 'zod';
@@ -16,15 +17,25 @@ const getPromptTemplate = async (
 		| 'post-edit',
 	blogId: string
 ) => {
-	const prompt = await prisma.prompt.findFirst({
-		where: {name: type, blogId},
-	});
-	if (prompt) return prompt.content;
+	// Only image prompt is stored in DB. Other templates remain on disk.
+	// This is because image prompt may be customized per blog.
+	if (type === 'image-prompt-creation') {
+		const prompt = await prisma.prompt.findFirst({
+			where: {name: type, blogId},
+		});
+		if (prompt) return prompt.content;
 
-	throw new NotFoundError(
-		'Prompt template not found',
-		'PROMPT_TEMPLATE_NOT_FOUND'
-	);
+		throw new NotFoundError(
+			'Prompt template not found',
+			'PROMPT_TEMPLATE_NOT_FOUND'
+		);
+	}
+
+	// For other prompt types, read the file from the prompts folder
+	// Casue they are generic templates
+	const filePath = `./src/prompts/${type}.txt`;
+	const template = await fs.readFile(filePath, 'utf-8');
+	return template;
 };
 
 const replacePlaceholder = (
