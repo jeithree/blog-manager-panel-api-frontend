@@ -347,7 +347,7 @@ export const updatePost = async (
 export const deletePost = async (userId: string, postId: string) => {
 	const post = await prisma.post.findFirst({
 		where: {id: postId, status: PostStatus.DRAFT},
-		select: {blogId: true},
+		select: {blogId: true, imageUrl: true},
 	});
 
 	if (!post) {
@@ -356,11 +356,19 @@ export const deletePost = async (userId: string, postId: string) => {
 
 	const blog = await prisma.blog.findFirst({
 		where: {id: post.blogId, userId},
-		select: {id: true},
+		select: {id: true, R2BucketName: true, R2CustomDomain: true},
 	});
 
 	if (!blog) {
 		throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+	}
+
+	// also delete image from R2
+	if (post.imageUrl) {
+		await R2Service.deleteImageFromR2(
+			blog.R2BucketName,
+			post.imageUrl.replace(`${blog.R2CustomDomain}/`, '')
+		);
 	}
 
 	await prisma.post.delete({
