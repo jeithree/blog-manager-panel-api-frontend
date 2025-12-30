@@ -5,6 +5,9 @@ export type Author = {
 	id: string;
 	name: string;
 	blogId: string;
+	slug: string;
+	bio?: string;
+	avatar?: string;
 	createdAt: string;
 	updatedAt: string;
 };
@@ -12,6 +15,9 @@ export type Author = {
 export type CreateAuthorData = {
 	name: string;
 	blogId: string;
+	slug: string;
+	bio?: string;
+	avatar?: string;
 };
 
 export const authorService = {

@@ -20,6 +20,9 @@ export default function AuthorsPage() {
 	const [selectedBlogId, setSelectedBlogId] = useState('');
 	const [authors, setAuthors] = useState<Author[]>([]);
 	const [name, setName] = useState('');
+	const [slug, setSlug] = useState('');
+	const [bio, setBio] = useState('');
+	const [avatar, setAvatar] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
 
 	const loadBlogs = useCallback(async () => {
@@ -61,13 +64,28 @@ export default function AuthorsPage() {
 		if (!name.trim() || !selectedBlogId) return;
 		setIsLoading(true);
 		try {
+			// auto-generate slug from name if not provided
+			const generatedSlug =
+				slug.trim() ||
+				name
+					.trim()
+					.toLowerCase()
+					.replace(/[^a-z0-9]+/g, '-')
+					.replace(/^-+|-+$/g, '');
+
 			const res = await authorService.createAuthor({
 				name: name.trim(),
 				blogId: selectedBlogId,
+				slug: generatedSlug,
+				bio: bio.trim() || undefined,
+				avatar: avatar.trim() || undefined,
 			});
 			if (res.success && res.data) {
 				setAuthors((prev) => [res.data!, ...prev]);
 				setName('');
+				setSlug('');
+				setBio('');
+				setAvatar('');
 			}
 		} catch (error) {
 			console.error('Failed to create author', error);
@@ -124,6 +142,33 @@ export default function AuthorsPage() {
 							value={name}
 							onChange={(e) => setName(e.target.value)}
 							placeholder="e.g. Jane Doe"
+						/>
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor="authorSlug">Slug</Label>
+						<Input
+							id="authorSlug"
+							value={slug}
+							onChange={(e) => setSlug(e.target.value)}
+							placeholder="optional (auto-generated from name)"
+						/>
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor="authorBio">Bio</Label>
+						<Input
+							id="authorBio"
+							value={bio}
+							onChange={(e) => setBio(e.target.value)}
+							placeholder="short biography (optional)"
+						/>
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor="authorAvatar">Avatar URL</Label>
+						<Input
+							id="authorAvatar"
+							value={avatar}
+							onChange={(e) => setAvatar(e.target.value)}
+							placeholder="https://... (optional)"
 						/>
 					</div>
 					<Button

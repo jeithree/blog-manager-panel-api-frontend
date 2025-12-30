@@ -19,6 +19,7 @@ const baseNavItems: NavItem[] = [
 	{title: 'Prompts', href: '/dashboard/prompts'},
 	{title: 'Blogs', href: '/dashboard/blogs'},
 	{title: 'Categories & Tags', href: '/dashboard/categories-tags'},
+    {title: 'Authors', href: '/dashboard/authors'},
 ];
 
 export function DashboardNav() {
