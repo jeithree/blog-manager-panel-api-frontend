@@ -22,21 +22,21 @@ export const createPostSchema = z.object({
 	description: z
 		.string()
 		.min(1, 'Description is required')
-		.max(500, 'Description must be at most 500 characters'),
+		.max(500, 'Description must be at most 500 characters').optional(),
 	slug: z
 		.string()
 		.min(1, 'Slug is required')
 		.max(150, 'Slug must be at most 150 characters'),
-	imageUrl: z.string().min(1, 'Image URL is required'),
-	content: z.string().min(1, 'Content is required'),
+	imageUrl: z.string().min(1, 'Image URL is required').optional(),
+	content: z.string().min(1, 'Content is required').optional(),
 	categoryId: z.string().min(1, 'Category ID is required'),
 	authorId: z.string().min(1, 'Author ID is required'),
 	tagIds: z.preprocess(
 		parseArrayField,
 		z.array(z.string().min(1, 'Tag ID is required'))
-	),
+	).optional(),
 	status: z.enum(PostStatus),
-	publishedAt: z.coerce.date(),
+	publishedAt: z.coerce.date().optional(),
 });
 
 export type CreatePostDto = z.infer<typeof createPostSchema>;

@@ -11,6 +11,7 @@ import {NotFoundError} from '../lib/appError.ts';
 
 const getPromptTemplate = async (
 	type:
+		| 'content-to-avoid'
 		| 'title-suggestions'
 		| 'post-creation'
 		| 'image-prompt-creation'
@@ -29,6 +30,14 @@ const getPromptTemplate = async (
 			'Prompt template not found',
 			'PROMPT_TEMPLATE_NOT_FOUND'
 		);
+	}
+
+	if (type === 'content-to-avoid') {
+		const prompt = await prisma.prompt.findFirst({
+			where: {name: type, blogId},
+		});
+		if (prompt) return prompt.content;
+		return '';
 	}
 
 	// For other prompt types, read the file from the prompts folder
@@ -59,7 +68,7 @@ export const generateTitleSuggestions = async (
 		where: {id: blogId, userId: userId},
 		include: {
 			categories: true,
-			posts: {select: {title: true, category: true}},
+			posts: {select: {title: true, slug: true, category: true}},
 		},
 	});
 
@@ -74,7 +83,10 @@ export const generateTitleSuggestions = async (
 	const categoriesNamesList = blog.categories.map((cat) => cat.name).join(', ');
 
 	const existingPostsList = blog.posts
-		.map((post) => `- ${post.title} | Category: ${post.category.name}`)
+		.map(
+			(post) =>
+				`- ${post.title} | Category: ${post.category.name} | Slug: ${post.slug}`
+		)
 		.join('\n');
 
 	// Prepare prompt
@@ -95,14 +107,27 @@ export const generateTitleSuggestions = async (
 		existingPostsList || 'No existing posts.'
 	);
 
+	let contentToAvoid = await getPromptTemplate('content-to-avoid', blogId);
+	promptTemplate = replacePlaceholder(
+		promptTemplate,
+		'{{CONTENT TO AVOID PLACEHOLDER}}',
+		contentToAvoid || 'No specific content to avoid.'
+	);
+
 	console.log('Prompt Template:\n', promptTemplate);
 
 	// Call OpenAI API - wrap list in root object so JSON Schema root is an object
+	// Titles now include both title and slug from the model; accept that shape
 	const TitleSuggestionsSchema = z.object({
 		suggestions: z.array(
 			z.object({
 				category: z.string(),
-				titles: z.array(z.string()),
+				titles: z.array(
+					z.object({
+						title: z.string(),
+						slug: z.string(),
+					})
+				),
 			})
 		),
 	});
@@ -123,8 +148,10 @@ export const generateTitleSuggestions = async (
 		blog.categories.map((cat) => [cat.name.toLowerCase(), cat.id])
 	);
 
+	// Return titles as objects containing title+slug so frontend can use generated slugs
 	const titleSuggestions = parsed.suggestions.map((item) => ({
-		...item,
+		category: item.category,
+		titles: item.titles.map((t) => ({title: t.title, slug: t.slug})),
 		categoryId: categoryNameToId.get(item.category.toLowerCase()) ?? null,
 	}));
 
@@ -135,7 +162,7 @@ export const generatePostContent = async (
 	userId: string,
 	data: GeneratePostContentDto
 ) => {
-	const {blogId, categoryId, title} = data;
+	const {blogId, categoryId, title, slug} = data;
 
 	if (!blogId) {
 		throw new NotFoundError('Blog ID is required', 'BLOG_ID_REQUIRED');
@@ -146,7 +173,7 @@ export const generatePostContent = async (
 		include: {
 			categories: true,
 			tags: true,
-			posts: {select: {title: true, category: true, slug: true}},
+			posts: {select: {title: true, slug: true, category: true}},
 		},
 	});
 
@@ -200,6 +227,13 @@ export const generatePostContent = async (
 		existingPostsList || 'No existing posts.'
 	);
 
+	let contentToAvoid = await getPromptTemplate('content-to-avoid', blogId);
+	promptTemplate = replacePlaceholder(
+		promptTemplate,
+		'{{CONTENT TO AVOID PLACEHOLDER}}',
+		contentToAvoid || 'No specific content to avoid.'
+	);
+
 	console.log('Prompt Template:\n', promptTemplate);
 
 	// Call OpenAI API
@@ -207,7 +241,6 @@ export const generatePostContent = async (
 		content: z.string(),
 		description: z.string(),
 		tags: z.array(z.string()),
-		slug: z.string(),
 	});
 
 	const client = new OpenAI();
@@ -226,7 +259,7 @@ export const generatePostContent = async (
 		blogId: blogId,
 		title: title,
 		description: parsed.description,
-		slug: parsed.slug,
+		slug: slug,
 		content: parsed.content,
 		categoryId: categoryId,
 		tagNames: parsed.tags,

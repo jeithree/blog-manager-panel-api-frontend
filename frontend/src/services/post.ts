@@ -36,6 +36,8 @@ export type CreatePostData = {
 	categoryId: string;
 	authorId: string;
 	tagIds?: string[];
+    status: PostStatus;
+    publishedAt?: Date;
 };
 
 export type UpdatePostData = {

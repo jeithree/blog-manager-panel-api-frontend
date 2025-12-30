@@ -40,11 +40,13 @@ export const generatePostContent = async (
 ) => {
 	try {
 		const userId = req.session.userId as string;
-		const {blogId, categoryId, title} = req.body as GeneratePostContentDto;
+		const {blogId, categoryId, slug, title} =
+			req.body as GeneratePostContentDto;
 		const postContent = await creatorService.generatePostContent(userId, {
 			blogId,
 			categoryId,
 			title,
+			slug,
 		});
 
 		return res

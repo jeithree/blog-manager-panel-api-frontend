@@ -53,6 +53,10 @@ export default function EditPostPage() {
 	const [showEditDialog, setShowEditDialog] = useState(false);
 	const [editRequest, setEditRequest] = useState('');
 	const [isGenerating, setIsGenerating] = useState(false);
+	const [isGeneratingContent, setIsGeneratingContent] = useState(false);
+	const [isGeneratingImagePrompt, setIsGeneratingImagePrompt] = useState(false);
+	const [imagePrompt, setImagePrompt] = useState('');
+	const [copiedPrompt, setCopiedPrompt] = useState(false);
 	const [isExporting, setIsExporting] = useState(false);
 
 	const loadPost = useCallback(async () => {
@@ -128,6 +132,79 @@ export default function EditPostPage() {
 			console.error('Failed to generate edit:', error);
 		} finally {
 			setIsGenerating(false);
+		}
+	};
+
+	const generateContent = async () => {
+		if (!post || !categoryId || !title) return;
+
+		setIsGeneratingContent(true);
+		try {
+			const response = await creatorService.generatePostContent({
+				blogId: post.blogId,
+				categoryId,
+				title,
+				slug,
+			});
+
+			if (response.success && response.data) {
+				const data = response.data;
+				setTitle(data.title || title);
+				setDescription(data.description || '');
+				setContent(data.content || '');
+
+				// slug is provided by the generator
+				setSlug(data.slug);
+
+				// Map generated tag names to existing tag IDs (do not create new tags)
+				if (data.tagNames && data.tagNames.length > 0) {
+					const matchedIds = data.tagNames
+						.map((name) =>
+							tags.find((t) => t.name.toLowerCase() === name.toLowerCase())
+						)
+						.filter(Boolean)
+						.map((t) => (t as Tag).id);
+
+					setSelectedTagIds(matchedIds);
+				}
+			}
+		} catch (error) {
+			console.error('Failed to generate content:', error);
+		} finally {
+			setIsGeneratingContent(false);
+		}
+	};
+
+	const generateImagePromptFromContent = async () => {
+		const blogPost = content || post?.content || '';
+		if (!blogPost || !post) return;
+
+		setIsGeneratingImagePrompt(true);
+		try {
+			const response = await creatorService.generateImagePrompt({
+				blogPost,
+				blogId: post.blogId,
+			});
+
+			if (response.success && response.data) {
+				setImagePrompt(response.data.imagePrompt || '');
+			}
+		} catch (error) {
+			console.error('Failed to generate image prompt:', error);
+		} finally {
+			setIsGeneratingImagePrompt(false);
+		}
+	};
+
+	const copyTextToClipboard = async (text: string, isPrompt = false) => {
+		try {
+			await navigator.clipboard.writeText(text);
+			if (isPrompt) {
+				setCopiedPrompt(true);
+				setTimeout(() => setCopiedPrompt(false), 2000);
+			}
+		} catch (err) {
+			console.error('Copy failed', err);
 		}
 	};
 
@@ -341,12 +418,23 @@ export default function EditPostPage() {
 					<CardHeader>
 						<div className="flex justify-between items-center">
 							<CardTitle>Content</CardTitle>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => setShowEditDialog(true)}>
-								AI Edit Request
-							</Button>
+							<div className="flex gap-2">
+								{isDraft && (
+									<Button
+										size="sm"
+										variant="outline"
+										onClick={generateContent}
+										disabled={isGeneratingContent}>
+										{isGeneratingContent ? 'Generating...' : 'Generate Content'}
+									</Button>
+								)}
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setShowEditDialog(true)}>
+									AI Edit Request
+								</Button>
+							</div>
 						</div>
 					</CardHeader>
 					<CardContent>
@@ -380,6 +468,39 @@ export default function EditPostPage() {
 								accept="image/*"
 								onChange={(e) => setImageFile(e.target.files?.[0] || null)}
 							/>
+
+							<div className="space-y-2">
+								<div className="flex justify-between items-center">
+									<Label>Image Prompt (for AI generation)</Label>
+									<div className="flex gap-2">
+										<Button
+											size="sm"
+											variant="outline"
+											onClick={generateImagePromptFromContent}
+											disabled={isGeneratingImagePrompt}>
+											{isGeneratingImagePrompt
+												? 'Generating...'
+												: 'Generate Prompt'}
+										</Button>
+										{imagePrompt && (
+											<Button
+												size="sm"
+												variant="outline"
+												onClick={() => copyTextToClipboard(imagePrompt, true)}>
+												{copiedPrompt ? 'Copied' : 'Copy Prompt'}
+											</Button>
+										)}
+									</div>
+								</div>
+								<Textarea
+									value={imagePrompt}
+									onChange={(e) => {
+										setImagePrompt(e.target.value);
+										setCopiedPrompt(false);
+									}}
+									placeholder="Describe the image you want"
+								/>
+							</div>
 						</div>
 
 						<div className="space-y-2">
@@ -421,7 +542,7 @@ export default function EditPostPage() {
 								variant="outline"
 								onClick={() => handleSave(PostStatus.DRAFT)}
 								disabled={isSaving}>
-								Save as Draft
+								Update Draft
 							</Button>
 							<Button
 								variant="outline"

@@ -3,7 +3,7 @@ import {API_URL} from '@/config';
 
 export type TitleSuggestion = {
 	category: string;
-	titles: string[];
+	titles: {title: string; slug: string}[];
 	categoryId: string;
 };
 
@@ -11,6 +11,7 @@ export type GeneratePostContentData = {
 	blogId: string;
 	categoryId: string;
 	title: string;
+	slug?: string;
 };
 
 export type GeneratedContent = {

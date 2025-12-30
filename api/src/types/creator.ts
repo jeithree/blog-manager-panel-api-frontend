@@ -7,6 +7,10 @@ export const generatePostContentSchema = z.object({
 		.string()
 		.min(1, 'Title is required')
 		.max(200, 'Title must be at most 200 characters'),
+	slug: z
+		.string()
+		.min(1, 'Slug is required')
+		.max(150, 'Slug must be at most 150 characters'),
 });
 export type GeneratePostContentDto = z.infer<typeof generatePostContentSchema>;
 
