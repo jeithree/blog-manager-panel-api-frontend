@@ -215,14 +215,19 @@ export default function CreatePostPage() {
 		}
 	};
 
-	const copyTextToClipboard = async (text: string, isPrompt = false) => {
+	const copyTextToClipboard = async (
+		text: string,
+		isPrompt = false,
+		label?: string
+	) => {
 		try {
 			await navigator.clipboard.writeText(text);
 			if (isPrompt) {
 				setCopiedPrompt(true);
 				setTimeout(() => setCopiedPrompt(false), 2000);
 			} else {
-				setCopiedText(text);
+				// allow caller to supply a short label (e.g., title) to drive the 'Copied' UI
+				setCopiedText(label ?? text);
 				setTimeout(() => setCopiedText(''), 2000);
 			}
 		} catch (err) {
@@ -469,7 +474,9 @@ export default function CreatePostPage() {
 												variant="outline"
 												onClick={(e) => {
 													e.stopPropagation();
-													copyTextToClipboard(titleObj.title);
+													const combined = `Title: ${titleObj.title}\nCategory: ${categoryGroup.category}\nSlug: ${titleObj.slug}`;
+													// pass a short label so the helper can set the 'Copied' indicator correctly
+													copyTextToClipboard(combined, false, titleObj.title);
 												}}>
 												{copiedText === titleObj.title ? 'Copied' : 'Copy'}
 											</Button>
