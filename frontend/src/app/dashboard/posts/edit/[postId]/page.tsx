@@ -536,7 +536,7 @@ export default function EditPostPage() {
 							disabled={isSaving}>
 							{isSaving ? 'Saving...' : 'Update Post'}
 						</Button>
-					) : (
+					) : isDraft ? (
 						<>
 							<Button
 								variant="outline"
@@ -549,6 +549,19 @@ export default function EditPostPage() {
 								onClick={() => handleSave(PostStatus.SCHEDULED)}
 								disabled={isSaving || !publishDate}>
 								Schedule
+							</Button>
+							<Button
+								onClick={() => handleSave(PostStatus.PUBLISHED)}
+								disabled={isSaving}>
+								{isSaving ? 'Saving...' : 'Publish'}
+							</Button>
+						</>
+					) : (
+						<>
+							<Button
+								onClick={() => handleSave(PostStatus.SCHEDULED)}
+								disabled={isSaving || !publishDate}>
+								{isSaving ? 'Saving...' : 'Update Schedule'}
 							</Button>
 							<Button
 								onClick={() => handleSave(PostStatus.PUBLISHED)}
