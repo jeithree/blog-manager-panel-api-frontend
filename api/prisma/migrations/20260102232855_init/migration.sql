@@ -37,6 +37,19 @@ CREATE TABLE `Blog` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `Prompt` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `content` TEXT NOT NULL,
+    `blogId` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `Prompt_blogId_idx`(`blogId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `Category` (
     `id` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
@@ -109,6 +122,20 @@ CREATE TABLE `Post` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `BlogMember` (
+    `id` VARCHAR(191) NOT NULL,
+    `blogId` VARCHAR(191) NOT NULL,
+    `userId` VARCHAR(191) NOT NULL,
+    `role` ENUM('OWNER', 'EDITOR') NOT NULL DEFAULT 'EDITOR',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    INDEX `BlogMember_blogId_idx`(`blogId`),
+    INDEX `BlogMember_userId_idx`(`userId`),
+    UNIQUE INDEX `BlogMember_blogId_userId_key`(`blogId`, `userId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `_PostToTag` (
     `A` VARCHAR(191) NOT NULL,
     `B` VARCHAR(191) NOT NULL,
@@ -119,6 +146,9 @@ CREATE TABLE `_PostToTag` (
 
 -- AddForeignKey
 ALTER TABLE `Blog` ADD CONSTRAINT `Blog_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Prompt` ADD CONSTRAINT `Prompt_blogId_fkey` FOREIGN KEY (`blogId`) REFERENCES `Blog`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Category` ADD CONSTRAINT `Category_blogId_fkey` FOREIGN KEY (`blogId`) REFERENCES `Blog`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -137,6 +167,12 @@ ALTER TABLE `Post` ADD CONSTRAINT `Post_authorId_fkey` FOREIGN KEY (`authorId`) 
 
 -- AddForeignKey
 ALTER TABLE `Post` ADD CONSTRAINT `Post_blogId_fkey` FOREIGN KEY (`blogId`) REFERENCES `Blog`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `BlogMember` ADD CONSTRAINT `BlogMember_blogId_fkey` FOREIGN KEY (`blogId`) REFERENCES `Blog`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `BlogMember` ADD CONSTRAINT `BlogMember_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `_PostToTag` ADD CONSTRAINT `_PostToTag_A_fkey` FOREIGN KEY (`A`) REFERENCES `Post`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

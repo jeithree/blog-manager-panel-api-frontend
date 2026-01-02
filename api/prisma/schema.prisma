@@ -22,6 +22,7 @@ model User {
     avatar            String?
     role              Role      @default(USER)
     blogs             Blog[]
+    blogMembers       BlogMember[]
     
     createdAt         DateTime  @default(now())
     updatedAt         DateTime  @updatedAt
@@ -42,6 +43,7 @@ model Blog {
     categories        Category[]
     tags              Tag[]
     authors           Author[]
+    members           BlogMember[]
     apiKey            String    @unique
     createdAt         DateTime  @default(now())
     updatedAt         DateTime  @updatedAt
@@ -145,4 +147,24 @@ enum PostStatus {
 enum Role {
     USER
     ADMIN
+}
+
+enum BlogRole {
+    OWNER
+    EDITOR
+}
+
+model BlogMember {
+    id        String    @id @default(cuid())
+    blogId    String
+    userId    String
+    role      BlogRole  @default(EDITOR)
+    createdAt DateTime  @default(now())
+
+    blog      Blog      @relation(fields: [blogId], references: [id], onDelete: Cascade)
+    user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([blogId, userId])
+    @@index([blogId])
+    @@index([userId])
 }
