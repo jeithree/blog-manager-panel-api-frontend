@@ -59,6 +59,83 @@ export function MarkdownEditor({
 				continue;
 			}
 
+			// Tables (GFM) - detect header line followed by separator line like "| --- | ---: | :---: |"
+			else if (!inCodeBlock && line.includes('|') && i + 1 < lines.length) {
+				const nextLine = lines[i + 1];
+				if (
+					/^\s*\|?[\s:-]+(?:\|[\s:-]+)+\|?\s*$/.test(nextLine) &&
+					/-/.test(nextLine)
+				) {
+					if (inList) {
+						htmlLines.push(`</${listType}>`);
+						inList = false;
+						listType = null;
+						lastListItemIndex = null;
+					}
+					const splitRow = (r: string) =>
+						r
+							.replace(/^\||\|$/g, '')
+							.split('|')
+							.map((c) => c.trim());
+					const headerCells = splitRow(line);
+					const sepCells = splitRow(nextLine);
+					const aligns = sepCells.map((s) => {
+						const left = s.startsWith(':');
+						const right = s.endsWith(':');
+						if (left && right) return 'center';
+						if (right) return 'right';
+						return 'left';
+					});
+					// collect body rows
+					const rows: string[][] = [];
+					let j = i + 2;
+					while (
+						j < lines.length &&
+						lines[j].includes('|') &&
+						lines[j].trim() !== ''
+					) {
+						rows.push(splitRow(lines[j]));
+						j++;
+					}
+					// advance index
+					i = j - 1;
+					// render table
+					htmlLines.push('<div class="my-6 overflow-auto">');
+					htmlLines.push('<table class="w-full text-left border-collapse">');
+					htmlLines.push('<thead>');
+					htmlLines.push('<tr>');
+					for (let k = 0; k < headerCells.length; k++) {
+						const cell = headerCells[k] ?? '';
+						const align = aligns[k] ?? 'left';
+						htmlLines.push(
+							`<th class="border-b px-3 py-2 text-sm font-semibold text-gray-900" style="text-align:${align}">${processInlineMarkdown(
+								cell
+							)}</th>`
+						);
+					}
+					htmlLines.push('</tr>');
+					htmlLines.push('</thead>');
+					htmlLines.push('<tbody>');
+					for (const row of rows) {
+						htmlLines.push('<tr>');
+						for (let k = 0; k < headerCells.length; k++) {
+							const cell = row[k] ?? '';
+							const align = aligns[k] ?? 'left';
+							htmlLines.push(
+								`<td class="border-b px-3 py-2 text-sm text-gray-700" style="text-align:${align}">${processInlineMarkdown(
+									cell
+								)}</td>`
+							);
+						}
+						htmlLines.push('</tr>');
+					}
+					htmlLines.push('</tbody>');
+					htmlLines.push('</table>');
+					htmlLines.push('</div>');
+					continue;
+				}
+			}
+
 			// Headers - close list if open
 			if (line.match(/^# /)) {
 				if (inList) {

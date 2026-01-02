@@ -1,5 +1,4 @@
 import prisma from '../prisma.ts';
-import RedisCache from '../lib/redisCache.ts';
 import type {CreatePromptDto, UpdatePromptDto} from '../types/prompt.ts';
 import {NotFoundError} from '../lib/appError.ts';
 
@@ -23,8 +22,6 @@ export const createPrompt = async (
 			...promptData,
 		},
 	});
-
-	await RedisCache.deleteByPattern(`public:prompts:${promptData.blogId}*`);
 
 	return newPrompt;
 };
@@ -75,8 +72,6 @@ export const updatePrompt = async (
 			...(promptData.content ? {content: promptData.content} : {}),
 		},
 	});
-
-	await RedisCache.deleteByPattern(`public:prompts:${prompt.blogId}*`);
 
 	return updated;
 };

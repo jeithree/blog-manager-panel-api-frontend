@@ -16,10 +16,9 @@ interface NavItem {
 const baseNavItems: NavItem[] = [
 	{title: 'Overview', href: '/dashboard'},
 	{title: 'Posts', href: '/dashboard/posts'},
-	{title: 'Prompts', href: '/dashboard/prompts'},
 	{title: 'Blogs', href: '/dashboard/blogs'},
 	{title: 'Categories & Tags', href: '/dashboard/categories-tags'},
-    {title: 'Authors', href: '/dashboard/authors'},
+	{title: 'Authors', href: '/dashboard/authors'},
 ];
 
 export function DashboardNav() {
@@ -28,7 +27,11 @@ export function DashboardNav() {
 	const {session, mutate} = useSession();
 	const isAdmin = session?.user?.role === 'ADMIN';
 	const navItems = isAdmin
-		? [...baseNavItems, {title: 'Admin', href: '/dashboard/admin/create-user'}]
+		? [
+				...baseNavItems,
+				{title: 'Admin', href: '/dashboard/admin/create-user'},
+				{title: 'Prompts', href: '/dashboard/prompts'},
+		  ]
 		: baseNavItems;
 	const [isLoggingOut, setIsLoggingOut] = useState(false);
 
