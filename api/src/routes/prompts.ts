@@ -5,7 +5,7 @@ import {
 	getPromptsQuerySchema,
 	updatePromptSchema,
 } from '../types/prompt.ts';
-import {isAdmin, isAuthenticated} from '../middlewares/auth.ts';
+import {isAuthenticated} from '../middlewares/auth.ts';
 import * as promptController from '../controllers/promptController.ts';
 
 const router = Router();
@@ -13,7 +13,6 @@ const router = Router();
 router.get(
 	'/',
 	isAuthenticated,
-    isAdmin,
 	validateQuery(getPromptsQuerySchema),
 	promptController.getPrompts
 );
@@ -21,7 +20,6 @@ router.get(
 router.post(
 	'/',
 	isAuthenticated,
-    isAdmin,
 	validateBody(createPromptSchema),
 	promptController.createPrompt
 );
@@ -29,7 +27,6 @@ router.post(
 router.put(
 	'/:id',
 	isAuthenticated,
-    isAdmin,
 	validateBody(updatePromptSchema),
 	promptController.updatePrompt
 );

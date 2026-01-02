@@ -19,6 +19,7 @@ const baseNavItems: NavItem[] = [
 	{title: 'Blogs', href: '/dashboard/blogs'},
 	{title: 'Categories & Tags', href: '/dashboard/categories-tags'},
 	{title: 'Authors', href: '/dashboard/authors'},
+    {title: 'Prompts', href: '/dashboard/prompts'},
 ];
 
 export function DashboardNav() {
@@ -30,7 +31,6 @@ export function DashboardNav() {
 		? [
 				...baseNavItems,
 				{title: 'Admin', href: '/dashboard/admin/create-user'},
-				{title: 'Prompts', href: '/dashboard/prompts'},
 		  ]
 		: baseNavItems;
 	const [isLoggingOut, setIsLoggingOut] = useState(false);
