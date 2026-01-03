@@ -17,6 +17,7 @@ import {categoryService, type Category} from '@/services/category';
 import {tagService, type Tag} from '@/services/tag';
 import {blogService, type Blog} from '@/services/blog';
 import {useSession} from '@/hooks/useSession';
+import {blogMemberService} from '@/services/blogMember';
 
 export default function PostsPage() {
 	const {session} = useSession();
@@ -25,6 +26,7 @@ export default function PostsPage() {
 	const [tags, setTags] = useState<Tag[]>([]);
 	const [blogs, setBlogs] = useState<Blog[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
+	const [isEditor, setIsEditor] = useState(false);
 
 	const [blogId, setBlogId] = useState('');
 	const ALL_VALUE = 'all';
@@ -40,6 +42,8 @@ export default function PostsPage() {
 		const currentBlog = blogs.find((b) => b.id === blogId);
 		return currentBlog ? currentBlog.userId === session?.user?.id : false;
 	}, [blogs, blogId, session?.user?.id]);
+
+	const userId = session?.user?.id;
 
 	const loadBlogs = useCallback(async () => {
 		try {
@@ -118,7 +122,27 @@ export default function PostsPage() {
 			loadPosts();
 			loadFilters();
 		}
-	}, [blogId, loadFilters, loadPosts]);
+
+		// determine if current user is an editor for the selected blog
+		const determineEditor = async () => {
+			if (!blogId || !userId) return setIsEditor(false);
+			try {
+				const membersRes = await blogMemberService.listMembers(blogId);
+				if (membersRes.success && membersRes.data) {
+					const me = userId;
+					const member = membersRes.data.find((m) => m.user.id === me);
+					setIsEditor(Boolean(member && member.role === 'EDITOR'));
+				} else {
+					setIsEditor(false);
+				}
+			} catch (err) {
+				console.error('Failed to determine membership role', err);
+				setIsEditor(false);
+			}
+		};
+
+		determineEditor();
+	}, [blogId, loadFilters, loadPosts, userId]);
 
 	const getStatusBadgeVariant = (status: PostStatus) => {
 		switch (status) {
@@ -145,9 +169,11 @@ export default function PostsPage() {
 		<div className="max-w-7xl mx-auto px-4 py-8">
 			<div className="flex justify-between items-center mb-6">
 				<h1 className="text-3xl font-bold">Posts</h1>
-				<Link href="/dashboard/posts/create">
-					<Button>Create Post</Button>
-				</Link>
+				{!isEditor ? (
+					<Link href="/dashboard/posts/create">
+						<Button>Create Post</Button>
+					</Link>
+				) : null}
 			</div>
 
 			<Card className="mb-6">

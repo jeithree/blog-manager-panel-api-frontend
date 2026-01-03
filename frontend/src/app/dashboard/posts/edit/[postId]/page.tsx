@@ -27,6 +27,8 @@ import {postService, type Post, PostStatus} from '@/services/post';
 import {categoryService, type Category} from '@/services/category';
 import {tagService, type Tag} from '@/services/tag';
 import {creatorService} from '@/services/creator';
+import {blogMemberService} from '@/services/blogMember';
+import * as userService from '@/services/user';
 
 export default function EditPostPage() {
 	const router = useRouter();
@@ -58,6 +60,13 @@ export default function EditPostPage() {
 	const [imagePrompt, setImagePrompt] = useState('');
 	const [copiedPrompt, setCopiedPrompt] = useState(false);
 	const [isExporting, setIsExporting] = useState(false);
+	const [
+		showConfirmRegenerateImagePrompt,
+		setShowConfirmRegenerateImagePrompt,
+	] = useState(false);
+	const [showConfirmRegenerateContent, setShowConfirmRegenerateContent] =
+		useState(false);
+	const [isEditor, setIsEditor] = useState(false);
 
 	const loadPost = useCallback(async () => {
 		setIsLoading(true);
@@ -99,6 +108,25 @@ export default function EditPostPage() {
 				}
 				if (tagsRes.success && tagsRes.data) {
 					setTags(tagsRes.data);
+				}
+
+				// determine if current user is an editor for this blog
+				try {
+					const [profileRes, membersRes] = await Promise.all([
+						userService.getProfile(),
+						blogMemberService.listMembers(postData.blogId),
+					]);
+					if (profileRes.success && membersRes.success) {
+						const me = profileRes.data;
+						const member = membersRes.data?.find((m) => m.user.id === me?.id);
+						if (member) {
+							setIsEditor(member.role === 'EDITOR');
+						} else {
+							setIsEditor(false);
+						}
+					}
+				} catch (err) {
+					console.error('Failed to determine membership role', err);
 				}
 			}
 		} catch (error) {
@@ -194,6 +222,32 @@ export default function EditPostPage() {
 		} finally {
 			setIsGeneratingImagePrompt(false);
 		}
+	};
+
+	const handleGenerateImagePromptClick = () => {
+		if ((imagePrompt || '').trim()) {
+			setShowConfirmRegenerateImagePrompt(true);
+			return;
+		}
+		generateImagePromptFromContent();
+	};
+
+	const handleConfirmGenerateImagePrompt = async () => {
+		setShowConfirmRegenerateImagePrompt(false);
+		await generateImagePromptFromContent();
+	};
+
+	const handleGenerateContentClick = () => {
+		if ((content || '').trim()) {
+			setShowConfirmRegenerateContent(true);
+			return;
+		}
+		generateContent();
+	};
+
+	const handleConfirmGenerateContent = async () => {
+		setShowConfirmRegenerateContent(false);
+		await generateContent();
 	};
 
 	const copyTextToClipboard = async (text: string, isPrompt = false) => {
@@ -423,7 +477,7 @@ export default function EditPostPage() {
 									<Button
 										size="sm"
 										variant="outline"
-										onClick={generateContent}
+										onClick={handleGenerateContentClick}
 										disabled={isGeneratingContent}>
 										{isGeneratingContent ? 'Generating...' : 'Generate Content'}
 									</Button>
@@ -476,7 +530,7 @@ export default function EditPostPage() {
 										<Button
 											size="sm"
 											variant="outline"
-											onClick={generateImagePromptFromContent}
+											onClick={handleGenerateImagePromptClick}
 											disabled={isGeneratingImagePrompt}>
 											{isGeneratingImagePrompt
 												? 'Generating...'
@@ -522,7 +576,7 @@ export default function EditPostPage() {
 						disabled={isSaving}>
 						Cancel
 					</Button>
-					{isDraft && (
+					{isDraft && !isEditor && (
 						<Button
 							variant="destructive"
 							onClick={handleDelete}
@@ -550,11 +604,15 @@ export default function EditPostPage() {
 								disabled={isSaving || !publishDate}>
 								Schedule
 							</Button>
-							<Button
-								onClick={() => handleSave(PostStatus.PUBLISHED)}
-								disabled={isSaving}>
-								{isSaving ? 'Saving...' : 'Publish'}
-							</Button>
+							{!isEditor && (
+								<>
+									<Button
+										onClick={() => handleSave(PostStatus.PUBLISHED)}
+										disabled={isSaving}>
+										{isSaving ? 'Saving...' : 'Publish'}
+									</Button>
+								</>
+							)}
 						</>
 					) : (
 						<>
@@ -570,12 +628,14 @@ export default function EditPostPage() {
 							</Button>
 						</>
 					)}
-					<Button
-						variant="outline"
-						onClick={handleExportMarkdown}
-						disabled={!isPublished || isExporting}>
-						{isExporting ? 'Exporting...' : 'Export Markdown'}
-					</Button>
+					{!isEditor && (
+						<Button
+							variant="outline"
+							onClick={handleExportMarkdown}
+							disabled={!isPublished || isExporting}>
+							{isExporting ? 'Exporting...' : 'Export Markdown'}
+						</Button>
+					)}
 				</div>
 			</div>
 
@@ -613,6 +673,60 @@ export default function EditPostPage() {
 							onClick={handleAIEdit}
 							disabled={isGenerating || !editRequest}>
 							{isGenerating ? 'Generating...' : 'Generate Edit'}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{/* Confirm regenerate image prompt */}
+			<Dialog
+				open={showConfirmRegenerateImagePrompt}
+				onOpenChange={setShowConfirmRegenerateImagePrompt}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Regenerate Image Prompt?</DialogTitle>
+					</DialogHeader>
+					<p>
+						There is already an image prompt. Regenerating will overwrite it.
+						Continue?
+					</p>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => setShowConfirmRegenerateImagePrompt(false)}>
+							Cancel
+						</Button>
+						<Button
+							onClick={handleConfirmGenerateImagePrompt}
+							disabled={isGeneratingImagePrompt}>
+							{isGeneratingImagePrompt ? 'Generating...' : 'Regenerate'}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{/* Confirm regenerate content */}
+			<Dialog
+				open={showConfirmRegenerateContent}
+				onOpenChange={setShowConfirmRegenerateContent}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Regenerate Content?</DialogTitle>
+					</DialogHeader>
+					<p>
+						There is already content in the editor. Generating new content will
+						replace it. Continue?
+					</p>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => setShowConfirmRegenerateContent(false)}>
+							Cancel
+						</Button>
+						<Button
+							onClick={handleConfirmGenerateContent}
+							disabled={isGeneratingContent}>
+							{isGeneratingContent ? 'Generating...' : 'Generate'}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

@@ -9,9 +9,18 @@ export const listMembers = async (requestingUserId: string, blogId: string) => {
 	const blog = await prisma.blog.findUnique({where: {id: blogId}});
 	if (!blog) throw new NotFoundError('Blog not found');
 
-	// Allow if requester is the blog owner
-	if (blog.userId !== requestingUserId) {
-		throw new ForbiddenError('Only the blog owner can view members');
+	// Allow if requester is the blog owner or an editor member
+	if (blog.userId === requestingUserId) {
+		// owner allowed
+	} else {
+		const member = await prisma.blogMember.findUnique({
+			where: {blogId_userId: {blogId, userId: requestingUserId}},
+		});
+		if (!member || member.role !== 'EDITOR') {
+			throw new ForbiddenError(
+				'Only the blog owner or editors can view members'
+			);
+		}
 	}
 
 	const members = await prisma.blogMember.findMany({

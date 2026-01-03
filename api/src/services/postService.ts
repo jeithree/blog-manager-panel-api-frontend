@@ -24,21 +24,10 @@ export const createPost = async (
 	postData: CreatePostDto,
 	file: Express.Multer.File | undefined
 ) => {
-	// Resolve blog and membership (owner or editor allowed)
-	const bm = await prisma.blog.findUnique({where: {id: postData.blogId}});
-	if (!bm) throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
-
-	const isOwner = bm.userId === userId;
-	if (!isOwner) {
-		// require membership with EDITOR role to create posts
-		const member = await prisma.blogMember.findUnique({
-			where: {blogId_userId: {blogId: postData.blogId, userId}},
-		});
-		if (!member || member.role !== 'EDITOR') {
-			throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
-		}
-	}
-	const blog = bm;
+	const blog = await prisma.blog.findUnique({
+		where: {id: postData.blogId, userId},
+	});
+	if (!blog) throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
 
 	const category = await prisma.category.findFirst({
 		where: {id: postData.categoryId, blogId: postData.blogId},
@@ -112,10 +101,6 @@ export const createPost = async (
 	await RedisCache.deleteByPattern(`public:post:${blog.id}:*`);
 
 	const willPublish = postData.status === PostStatus.PUBLISHED;
-	if (willPublish && !isOwner) {
-		// Only owners can publish
-		throw new ForbiddenError('Only the blog owner can publish posts');
-	}
 	if (willPublish && blog.netlifySiteId) {
 		if (!DEV_MODE) {
 			try {

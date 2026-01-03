@@ -61,7 +61,7 @@ router.post(
 	createImageUpload('imageUrl'),
 	setImageFilename,
 	validateBody(createPostSchema),
-	requireBlogRoles(['OWNER', 'EDITOR']),
+	requireBlogRoles(['OWNER']),
 	postController.createPost
 );
 
