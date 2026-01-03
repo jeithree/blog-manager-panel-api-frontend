@@ -11,11 +11,18 @@ import {
 export const createBlog = async (userId: string, blogData: CreateBlogDto) => {
 	const apiKey = crypto.randomBytes(32).toString('hex');
 
+	// Create the blog and add the creating user as OWNER in BlogMember
 	const newBlog = await prisma.blog.create({
 		data: {
 			...blogData,
 			userId: userId,
 			apiKey,
+			members: {
+				create: {
+					userId,
+					role: 'OWNER',
+				},
+			},
 		},
 	});
 
@@ -63,10 +70,11 @@ export const updateBlog = async (
 export const getBlogs = async (userId: string) => {
 	const blogs = await prisma.blog.findMany({
 		where: {
-			userId,
+			OR: [{userId}, {members: {some: {userId}}}],
 		},
 		select: {
 			id: true,
+			userId: true,
 			title: true,
 			domain: true,
 			description: true,
@@ -92,7 +100,7 @@ export const getBlog = async (userId: string, blogId?: string) => {
 	const blog = await prisma.blog.findFirst({
 		where: {
 			id: blogId,
-			userId,
+			OR: [{userId}, {members: {some: {userId}}}],
 		},
 		include: {
 			categories: true,

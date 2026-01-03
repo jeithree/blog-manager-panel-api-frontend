@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState, useCallback, useMemo} from 'react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import {authorService, type Author} from '@/services/author';
 import {blogService, type Blog} from '@/services/blog';
+import {useSession} from '@/hooks/useSession';
 
 export default function AuthorsPage() {
 	const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -24,20 +25,18 @@ export default function AuthorsPage() {
 	const [bio, setBio] = useState('');
 	const [avatar, setAvatar] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
+	const {session} = useSession();
 
 	const loadBlogs = useCallback(async () => {
 		try {
 			const res = await blogService.getBlogs();
 			if (res.success && res.data) {
 				setBlogs(res.data);
-				if (!selectedBlogId && res.data.length > 0) {
-					setSelectedBlogId(res.data[0].id);
-				}
 			}
 		} catch (error) {
 			console.error('Failed to load blogs', error);
 		}
-	}, [selectedBlogId]);
+	}, []);
 
 	const loadAuthors = useCallback(async (blogId: string) => {
 		try {
@@ -54,6 +53,21 @@ export default function AuthorsPage() {
 		loadBlogs();
 	}, [loadBlogs]);
 
+	const visibleBlogs = useMemo(() => {
+		if (!session?.user) return [] as Blog[];
+		return blogs.filter((b) => b.userId === session.user!.id);
+	}, [blogs, session]);
+
+	useEffect(() => {
+		if (!visibleBlogs.length) {
+			setSelectedBlogId('');
+			return;
+		}
+		if (!selectedBlogId || !visibleBlogs.some((b) => b.id === selectedBlogId)) {
+			setSelectedBlogId(visibleBlogs[0].id);
+		}
+	}, [visibleBlogs, selectedBlogId]);
+
 	useEffect(() => {
 		if (selectedBlogId) {
 			loadAuthors(selectedBlogId);
@@ -62,6 +76,9 @@ export default function AuthorsPage() {
 
 	const handleCreate = async () => {
 		if (!name.trim() || !selectedBlogId) return;
+		const selected = visibleBlogs.find((b) => b.id === selectedBlogId);
+		const isOwner = selected?.userId === session?.user?.id;
+		if (!isOwner) return;
 		setIsLoading(true);
 		try {
 			// auto-generate slug from name if not provided
@@ -118,7 +135,7 @@ export default function AuthorsPage() {
 							<SelectValue placeholder="Select a blog" />
 						</SelectTrigger>
 						<SelectContent>
-							{blogs.map((blog) => (
+							{visibleBlogs.map((blog) => (
 								<SelectItem
 									key={blog.id}
 									value={blog.id}>

@@ -30,7 +30,16 @@ export const getTags = async (userId: string, blogId: string) => {
 	const blog = await prisma.blog.findFirst({
 		where: {
 			id: blogId,
-			userId,
+			OR: [
+				{userId},
+				{
+					members: {
+						some: {
+							userId,
+						},
+					},
+				},
+			],
 		},
 		include: {
 			tags: true,

@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useEffect, useCallback} from 'react';
+import {useState, useEffect, useCallback, useMemo} from 'react';
 import Link from 'next/link';
 import {Button} from '@/components/ui/button';
 import {
@@ -16,8 +16,10 @@ import {postService, type Post, PostStatus} from '@/services/post';
 import {categoryService, type Category} from '@/services/category';
 import {tagService, type Tag} from '@/services/tag';
 import {blogService, type Blog} from '@/services/blog';
+import {useSession} from '@/hooks/useSession';
 
 export default function PostsPage() {
+	const {session} = useSession();
 	const [posts, setPosts] = useState<Post[]>([]);
 	const [categories, setCategories] = useState<Category[]>([]);
 	const [tags, setTags] = useState<Tag[]>([]);
@@ -32,6 +34,12 @@ export default function PostsPage() {
 	const [selectedStatus, setSelectedStatus] = useState<string>(ALL_VALUE);
 	const [page, setPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(1);
+
+	// Check if current user is the owner of the selected blog
+	const isOwner = useMemo(() => {
+		const currentBlog = blogs.find((b) => b.id === blogId);
+		return currentBlog ? currentBlog.userId === session?.user?.id : false;
+	}, [blogs, blogId, session?.user?.id]);
 
 	const loadBlogs = useCallback(async () => {
 		try {
@@ -336,14 +344,16 @@ export default function PostsPage() {
 										</div>
 
 										<div className="flex gap-2 ml-4">
-											<Link
-												href={`/dashboard/posts/edit/${post.id}?blogId=${blogId}`}>
-												<Button
-													variant="outline"
-													size="sm">
-													Edit
-												</Button>
-											</Link>
+											{(post.status !== PostStatus.PUBLISHED || isOwner) && (
+												<Link
+													href={`/dashboard/posts/edit/${post.id}?blogId=${blogId}`}>
+													<Button
+														variant="outline"
+														size="sm">
+														Edit
+													</Button>
+												</Link>
+											)}
 										</div>
 									</div>
 								</CardContent>

@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useCallback, useMemo} from 'react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -16,6 +16,7 @@ import {
 import {categoryService, type Category} from '@/services/category';
 import {tagService, type Tag} from '@/services/tag';
 import {blogService, type Blog} from '@/services/blog';
+import {useSession} from '@/hooks/useSession';
 import {Textarea} from '@/components/ui/textarea';
 import {
 	Select,
@@ -44,20 +45,18 @@ export default function CategoriesTagsPage() {
 	const [newTagName, setNewTagName] = useState('');
 	const [newTagSlug, setNewTagSlug] = useState('');
 	const [isCreatingTag, setIsCreatingTag] = useState(false);
+	const {session} = useSession();
 
 	const loadBlogs = useCallback(async () => {
 		try {
 			const response = await blogService.getBlogs();
 			if (response.success && response.data) {
 				setBlogs(response.data);
-				if (response.data.length > 0 && !blogId) {
-					setBlogId(response.data[0].id);
-				}
 			}
 		} catch (error) {
 			console.error('Failed to load blogs:', error);
 		}
-	}, [blogId]);
+	}, []);
 
 	const loadData = useCallback(async () => {
 		setIsLoading(true);
@@ -83,6 +82,21 @@ export default function CategoriesTagsPage() {
 	useEffect(() => {
 		loadBlogs();
 	}, [loadBlogs]);
+
+	const visibleBlogs = useMemo(() => {
+		if (!session?.user) return [] as Blog[];
+		return blogs.filter((b) => b.userId === session.user!.id);
+	}, [blogs, session]);
+
+	useEffect(() => {
+		if (!visibleBlogs.length) {
+			setBlogId('');
+			return;
+		}
+		if (!blogId || !visibleBlogs.some((b) => b.id === blogId)) {
+			setBlogId(visibleBlogs[0].id);
+		}
+	}, [visibleBlogs, blogId]);
 
 	useEffect(() => {
 		if (blogId) {
@@ -160,7 +174,7 @@ export default function CategoriesTagsPage() {
 								<SelectValue placeholder="Select a blog" />
 							</SelectTrigger>
 							<SelectContent>
-								{blogs.map((blog) => (
+								{visibleBlogs.map((blog) => (
 									<SelectItem
 										key={blog.id}
 										value={blog.id}>

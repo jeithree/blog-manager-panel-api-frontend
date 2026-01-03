@@ -14,6 +14,7 @@ import {
 	BadRequestError,
 	NotFoundError,
 	UnauthorizedError,
+	ForbiddenError,
 } from '../lib/appError.ts';
 import * as R2Service from './R2Service.ts';
 import {DEV_MODE} from '../configs/basics.ts';
@@ -23,16 +24,21 @@ export const createPost = async (
 	postData: CreatePostDto,
 	file: Express.Multer.File | undefined
 ) => {
-	const blog = await prisma.blog.findFirst({
-		where: {
-			id: postData.blogId,
-			userId: userId,
-		},
-	});
+	// Resolve blog and membership (owner or editor allowed)
+	const bm = await prisma.blog.findUnique({where: {id: postData.blogId}});
+	if (!bm) throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
 
-	if (!blog) {
-		throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+	const isOwner = bm.userId === userId;
+	if (!isOwner) {
+		// require membership with EDITOR role to create posts
+		const member = await prisma.blogMember.findUnique({
+			where: {blogId_userId: {blogId: postData.blogId, userId}},
+		});
+		if (!member || member.role !== 'EDITOR') {
+			throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+		}
 	}
+	const blog = bm;
 
 	const category = await prisma.category.findFirst({
 		where: {id: postData.categoryId, blogId: postData.blogId},
@@ -106,6 +112,10 @@ export const createPost = async (
 	await RedisCache.deleteByPattern(`public:post:${blog.id}:*`);
 
 	const willPublish = postData.status === PostStatus.PUBLISHED;
+	if (willPublish && !isOwner) {
+		// Only owners can publish
+		throw new ForbiddenError('Only the blog owner can publish posts');
+	}
 	if (willPublish && blog.netlifySiteId) {
 		if (!DEV_MODE) {
 			try {
@@ -143,10 +153,11 @@ export const updatePost = async (
 	const blog = await prisma.blog.findFirst({
 		where: {
 			id: blogId,
-			userId,
+			// owner check was here; replaced by membership resolution below
 		},
 		select: {
 			id: true,
+			userId: true,
 			title: true,
 			netlifySiteId: true,
 			R2BucketName: true,
@@ -156,6 +167,16 @@ export const updatePost = async (
 
 	if (!blog) {
 		throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+	}
+
+	const isOwner = blog.userId === userId;
+	if (!isOwner) {
+		const member = await prisma.blogMember.findUnique({
+			where: {blogId_userId: {blogId, userId}},
+		});
+		if (!member || member.role !== 'EDITOR') {
+			throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+		}
 	}
 
 	const post = await prisma.post.findFirst({
@@ -318,6 +339,10 @@ export const updatePost = async (
 	await RedisCache.deleteByPattern(`public:post:${blogId}:*`);
 
 	const willPublish = nextStatus === PostStatus.PUBLISHED && !wasPublished;
+	if (willPublish && !isOwner) {
+		// Only owners can publish
+		throw new ForbiddenError('Only the blog owner can publish posts');
+	}
 	if (willPublish && blog.netlifySiteId) {
 		if (!DEV_MODE) {
 			try {
@@ -390,15 +415,18 @@ export const getPosts = async (
 		);
 	}
 
-	const blog = await prisma.blog.findFirst({
-		where: {
-			id: blogId,
-			userId,
-		},
-	});
-
-	if (!blog) {
+	const bm = await prisma.blog.findUnique({where: {id: blogId}});
+	if (!bm) {
 		throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+	}
+	const isOwner = bm.userId === userId;
+	if (!isOwner) {
+		const member = await prisma.blogMember.findUnique({
+			where: {blogId_userId: {blogId, userId}},
+		});
+		if (!member || member.role !== 'EDITOR') {
+			throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+		}
 	}
 
 	const where = {
@@ -444,11 +472,21 @@ export const getPostById = async (
 	postId: string
 ) => {
 	const blog = await prisma.blog.findFirst({
-		where: {id: blogId, userId},
+		where: {id: blogId},
 	});
 
 	if (!blog) {
 		throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+	}
+
+	const isOwner = blog.userId === userId;
+	if (!isOwner) {
+		const member = await prisma.blogMember.findUnique({
+			where: {blogId_userId: {blogId, userId}},
+		});
+		if (!member || member.role !== 'EDITOR') {
+			throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+		}
 	}
 
 	const post = await prisma.post.findFirst({

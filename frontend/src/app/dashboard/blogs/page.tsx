@@ -3,13 +3,16 @@
 import {useState, useEffect} from 'react';
 import Link from 'next/link';
 import {Button} from '@/components/ui/button';
+import {Badge} from '@/components/ui/badge';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {blogService, type Blog} from '@/services/blog';
+import {useSession} from '@/hooks/useSession';
 
 export default function BlogsPage() {
 	const [blogs, setBlogs] = useState<Blog[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState('');
+	const {session} = useSession();
 
 	useEffect(() => {
 		loadBlogs();
@@ -66,68 +69,86 @@ export default function BlogsPage() {
 				</Card>
 			) : (
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-					{blogs.map((blog) => (
-						<Card
-							key={blog.id}
-							className="hover:shadow-lg transition-shadow">
-							<CardHeader>
-								<div className="flex justify-between items-start">
-									<div className="flex-1">
-										<CardTitle className="mb-2">{blog.title}</CardTitle>
-										<a
-											href={`https://${blog.domain}`}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-sm text-primary hover:underline">
-											{blog.domain}
-										</a>
+					{blogs.map((blog) => {
+						const isOwner = session?.user?.id === blog.userId;
+						return (
+							<Card
+								key={blog.id}
+								className="hover:shadow-lg transition-shadow">
+								<CardHeader>
+									<div className="flex justify-between items-start">
+										<div className="flex-1">
+											<div className="flex items-center gap-2 mb-2">
+												<CardTitle>{blog.title}</CardTitle>
+												{!isOwner && (
+													<Badge
+														variant="secondary"
+														className="text-xs">
+														Editor
+													</Badge>
+												)}
+											</div>
+											<a
+												href={`https://${blog.domain}`}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="text-sm text-primary hover:underline">
+												{blog.domain}
+											</a>
+										</div>
+										{isOwner && (
+											<Link href={`/dashboard/blogs/edit/${blog.id}`}>
+												<Button
+													variant="outline"
+													size="sm">
+													Edit
+												</Button>
+											</Link>
+										)}
 									</div>
-									<Link href={`/dashboard/blogs/edit/${blog.id}`}>
-										<Button
-											variant="outline"
-											size="sm">
-											Edit
-										</Button>
-									</Link>
-								</div>
-							</CardHeader>
-							<CardContent className="space-y-4">
-								<div>
-									<p className="text-sm line-clamp-3">{blog.description}</p>
-								</div>
-
-								<div className="grid gap-3 pt-3 border-t">
+								</CardHeader>
+								<CardContent className="space-y-4">
 									<div>
-										<p className="text-xs font-medium text-muted-foreground">
-											Netlify Site
-										</p>
-										<p className="text-xs truncate">{blog.netlifySiteId}</p>
+										<p className="text-sm line-clamp-3">{blog.description}</p>
 									</div>
-									<div>
-										<p className="text-xs font-medium text-muted-foreground">
-											R2 Bucket
-										</p>
-										<p className="text-xs truncate">{blog.R2BucketName}</p>
-									</div>
-                                    <div>
-										<p className="text-xs font-medium text-muted-foreground">
-											R2 Custom Domain
-										</p>
-										<p className="text-xs truncate">{blog.R2CustomDomain}</p>
-									</div>
-								</div>
 
-								<div className="flex justify-between text-xs text-muted-foreground pt-3 border-t">
-									<span>
-										Created {new Date(blog.createdAt).toLocaleDateString()}
-									</span>
-									<span>
-										Updated {new Date(blog.updatedAt).toLocaleDateString()}
-									</span>
-								</div>
-							</CardContent>
-						</Card>
-					))}
+									{isOwner && (
+										<div className="grid gap-3 pt-3 border-t">
+											<div>
+												<p className="text-xs font-medium text-muted-foreground">
+													Netlify Site
+												</p>
+												<p className="text-xs truncate">{blog.netlifySiteId}</p>
+											</div>
+											<div>
+												<p className="text-xs font-medium text-muted-foreground">
+													R2 Bucket
+												</p>
+												<p className="text-xs truncate">{blog.R2BucketName}</p>
+											</div>
+											<div>
+												<p className="text-xs font-medium text-muted-foreground">
+													R2 Custom Domain
+												</p>
+												<p className="text-xs truncate">
+													{blog.R2CustomDomain}
+												</p>
+											</div>
+										</div>
+									)}
+
+									<div className="flex justify-between text-xs text-muted-foreground pt-3 border-t">
+										<span>
+											Created {new Date(blog.createdAt).toLocaleDateString()}
+										</span>
+										<span>
+											Updated {new Date(blog.updatedAt).toLocaleDateString()}
+										</span>
+									</div>
+								</CardContent>
+							</Card>
+						);
+					})}
 				</div>
 			)}
 		</div>

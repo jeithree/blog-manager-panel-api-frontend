@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useCallback, useMemo} from 'react';
 import {useRouter, useParams} from 'next/navigation';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -8,6 +8,8 @@ import {Label} from '@/components/ui/label';
 import {Textarea} from '@/components/ui/textarea';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {blogService, type Blog} from '@/services/blog';
+import {blogMemberService, type BlogMember} from '@/services/blogMember';
+import {useSession} from '@/hooks/useSession';
 
 export default function EditBlogPage() {
 	const router = useRouter();
@@ -26,6 +28,29 @@ export default function EditBlogPage() {
 		R2BucketName: '',
 		R2CustomDomain: '',
 	});
+
+	// Members
+	const [members, setMembers] = useState<BlogMember[]>([]);
+	const [loadingMembers, setLoadingMembers] = useState(false);
+	const [newMemberUserId, setNewMemberUserId] = useState('');
+	const {session} = useSession();
+
+	const isOwner = useMemo(() => {
+		if (!blog || !session?.user) return false;
+		return blog.userId === session.user.id;
+	}, [blog, session]);
+
+	const loadMembers = useCallback(async () => {
+		setLoadingMembers(true);
+		try {
+			const res = await blogMemberService.listMembers(blogId);
+			if (res.success && res.data) setMembers(res.data);
+		} catch (err) {
+			console.error('Failed to load members', err);
+		} finally {
+			setLoadingMembers(false);
+		}
+	}, [blogId]);
 
 	const loadBlog = useCallback(async () => {
 		setIsLoading(true);
@@ -53,7 +78,8 @@ export default function EditBlogPage() {
 
 	useEffect(() => {
 		loadBlog();
-	}, [loadBlog]);
+		loadMembers();
+	}, [loadBlog, loadMembers]);
 
 	const handleChange = (field: string, value: string) => {
 		setFormData((prev) => ({...prev, [field]: value}));
@@ -61,6 +87,7 @@ export default function EditBlogPage() {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		if (!isOwner) return;
 		setIsSaving(true);
 
 		try {
@@ -74,6 +101,36 @@ export default function EditBlogPage() {
 			alert('Failed to update blog. Please try again.');
 		} finally {
 			setIsSaving(false);
+		}
+	};
+
+	const handleAddMember = async () => {
+		if (!isOwner) return;
+		if (!newMemberUserId.trim()) return;
+		try {
+			const res = await blogMemberService.addMember(
+				blogId,
+				newMemberUserId.trim()
+			);
+			if (res.success) {
+				setNewMemberUserId('');
+				loadMembers();
+			}
+		} catch (err) {
+			console.error('Failed to add member', err);
+			alert('Failed to add member');
+		}
+	};
+
+	const handleRemoveMember = async (userId: string) => {
+		if (!isOwner) return;
+		if (!confirm('Remove this editor from the blog?')) return;
+		try {
+			const res = await blogMemberService.removeMember(blogId, userId);
+			if (res.success) loadMembers();
+		} catch (err) {
+			console.error('Failed to remove member', err);
+			alert('Failed to remove member');
 		}
 	};
 
@@ -95,7 +152,14 @@ export default function EditBlogPage() {
 
 	return (
 		<div className="max-w-2xl mx-auto px-4 py-8">
-			<h1 className="text-3xl font-bold mb-6">Edit Blog</h1>
+			<h1 className="text-3xl font-bold mb-6">
+				{isOwner ? 'Edit Blog' : 'Blog Details'}
+			</h1>
+			{!isOwner && (
+				<p className="text-sm text-muted-foreground mb-4">
+					You are an editor on this blog. Details are read-only.
+				</p>
+			)}
 
 			<form onSubmit={handleSubmit}>
 				<Card>
@@ -110,6 +174,7 @@ export default function EditBlogPage() {
 								value={formData.title}
 								onChange={(e) => handleChange('title', e.target.value)}
 								placeholder="My Awesome Blog"
+								disabled={!isOwner}
 							/>
 						</div>
 
@@ -120,6 +185,7 @@ export default function EditBlogPage() {
 								value={formData.domain}
 								onChange={(e) => handleChange('domain', e.target.value)}
 								placeholder="myawesomeblog.com"
+								disabled={!isOwner}
 							/>
 						</div>
 
@@ -131,6 +197,7 @@ export default function EditBlogPage() {
 								onChange={(e) => handleChange('description', e.target.value)}
 								placeholder="A brief description of your blog"
 								rows={3}
+								disabled={!isOwner}
 							/>
 						</div>
 
@@ -141,6 +208,7 @@ export default function EditBlogPage() {
 								value={formData.netlifySiteId}
 								onChange={(e) => handleChange('netlifySiteId', e.target.value)}
 								placeholder="your-site-id"
+								disabled={!isOwner}
 							/>
 						</div>
 
@@ -151,6 +219,7 @@ export default function EditBlogPage() {
 								value={formData.R2BucketName}
 								onChange={(e) => handleChange('R2BucketName', e.target.value)}
 								placeholder="my-blog-bucket"
+								disabled={!isOwner}
 							/>
 						</div>
 
@@ -162,6 +231,7 @@ export default function EditBlogPage() {
 								value={formData.R2CustomDomain}
 								onChange={(e) => handleChange('R2CustomDomain', e.target.value)}
 								placeholder="https://cdn.myawesomeblog.com"
+								disabled={!isOwner}
 							/>
 						</div>
 					</CardContent>
@@ -173,15 +243,69 @@ export default function EditBlogPage() {
 						variant="outline"
 						onClick={() => router.push('/dashboard/blogs')}
 						disabled={isSaving}>
-						Cancel
+						Back
 					</Button>
-					<Button
-						type="submit"
-						disabled={isSaving}>
-						{isSaving ? 'Saving...' : 'Save Changes'}
-					</Button>
+					{isOwner && (
+						<Button
+							type="submit"
+							disabled={isSaving || !isOwner}>
+							{isSaving ? 'Saving...' : 'Save Changes'}
+						</Button>
+					)}
 				</div>
 			</form>
+
+			{isOwner && (
+				// Members management (owners only)
+				<Card className="mt-6">
+					<CardHeader>
+						<CardTitle>Members</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div className="space-y-4">
+							<div className="flex gap-2">
+								<Input
+									placeholder="User ID to add as editor"
+									value={newMemberUserId}
+									onChange={(e) => setNewMemberUserId(e.target.value)}
+								/>
+								<Button
+									onClick={handleAddMember}
+									disabled={!newMemberUserId.trim()}>
+									Add Editor
+								</Button>
+							</div>
+
+							{loadingMembers ? (
+								<div>Loading members...</div>
+							) : (
+								<ul className="space-y-2">
+									{members.map((m) => (
+										<li
+											key={m.id}
+											className="flex justify-between items-center">
+											<div>
+												<strong>{m.user.username}</strong> — {m.user.email}
+												<div className="text-sm text-muted-foreground">
+													{m.role}
+												</div>
+											</div>
+											{m.role === 'OWNER' ? null : (
+												<Button
+													variant="destructive"
+													size="sm"
+													onClick={() => handleRemoveMember(m.user.id)}>
+													Remove
+												</Button>
+											)}
+										</li>
+									))}
+								</ul>
+							)}
+						</div>
+					</CardContent>
+				</Card>
+			)}
 		</div>
 	);
 }

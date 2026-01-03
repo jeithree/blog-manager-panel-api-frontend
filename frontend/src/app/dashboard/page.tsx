@@ -22,6 +22,10 @@ export default function DashboardPage() {
 						<CardTitle>User Info</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-2 text-sm">
+                        <p>
+							<span className="font-medium">ID:</span>{' '}
+							{session?.user?.id}
+						</p>
 						<p>
 							<span className="font-medium">Username:</span>{' '}
 							{session?.user?.username}

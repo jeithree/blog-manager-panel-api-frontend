@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useEffect, useCallback} from 'react';
+import {useState, useEffect, useCallback, useMemo} from 'react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import {blogService, type Blog} from '@/services/blog';
 import {promptService, type Prompt} from '@/services/prompt';
+import {useSession} from '@/hooks/useSession';
 
 export default function PromptsPage() {
 	const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -35,17 +36,18 @@ export default function PromptsPage() {
 	const [content, setContent] = useState('');
 	const [isSaving, setIsSaving] = useState(false);
 
+	const {session} = useSession();
+
 	const loadBlogs = useCallback(async () => {
 		try {
 			const res = await blogService.getBlogs();
 			if (res.success && res.data) {
 				setBlogs(res.data);
-				if (res.data.length > 0 && !blogId) setBlogId(res.data[0].id);
 			}
 		} catch (e) {
 			console.error(e);
 		}
-	}, [blogId]);
+	}, []);
 
 	const loadPrompts = useCallback(async () => {
 		if (!blogId) return;
@@ -63,6 +65,21 @@ export default function PromptsPage() {
 	useEffect(() => {
 		loadBlogs();
 	}, [loadBlogs]);
+
+	const visibleBlogs = useMemo(() => {
+		if (!session?.user) return [] as Blog[];
+		return blogs.filter((b) => b.userId === session.user!.id);
+	}, [blogs, session]);
+
+	useEffect(() => {
+		if (!visibleBlogs.length) {
+			setBlogId('');
+			return;
+		}
+		if (!blogId || !visibleBlogs.some((b) => b.id === blogId)) {
+			setBlogId(visibleBlogs[0].id);
+		}
+	}, [visibleBlogs, blogId]);
 	useEffect(() => {
 		if (blogId) loadPrompts();
 	}, [blogId, loadPrompts]);
@@ -128,7 +145,7 @@ export default function PromptsPage() {
 								<SelectValue placeholder="Select a blog" />
 							</SelectTrigger>
 							<SelectContent>
-								{blogs.map((b) => (
+								{visibleBlogs.map((b) => (
 									<SelectItem
 										key={b.id}
 										value={b.id}>

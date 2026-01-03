@@ -3,6 +3,7 @@ import {API_URL} from '@/config';
 
 export type Blog = {
 	id: string;
+	userId: string;
 	title: string;
 	domain: string;
 	description: string;

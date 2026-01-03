@@ -30,8 +30,8 @@ export const getAuthors = async (userId: string, blogId: string) => {
 	return prisma.author.findMany({
 		where: {
 			blog: {
-				userId,
-				id: blogId
+				id: blogId,
+				OR: [{userId}, {members: {some: {userId}}}],
 			},
 		},
 		orderBy: {createdAt: 'desc'},

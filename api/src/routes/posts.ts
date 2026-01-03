@@ -1,6 +1,7 @@
 import {Router} from 'express';
 import {validateBody, validateQuery} from '../middlewares/validation.ts';
 import {isAuthenticated} from '../middlewares/auth.ts';
+import {requireBlogRoles} from '../middlewares/blogPermission.ts';
 import {
 	createPostSchema,
 	getPostByIdQuerySchema,
@@ -32,6 +33,7 @@ router.get(
 router.post(
 	'/:postId/markdown',
 	isAuthenticated,
+	requireBlogRoles(['OWNER']),
 	validateQuery(getPostByIdQuerySchema),
 	postController.exportPostMarkdown
 );
@@ -39,13 +41,19 @@ router.post(
 router.patch(
 	'/:postId',
 	isAuthenticated,
+	requireBlogRoles(['OWNER', 'EDITOR']),
 	createImageUpload('imageUrl'),
 	setImageFilename,
 	validateBody(updatePostSchema),
 	postController.updatePost
 );
 
-router.delete('/:postId', isAuthenticated, postController.deletePost);
+router.delete(
+	'/:postId',
+	isAuthenticated,
+	requireBlogRoles(['OWNER']),
+	postController.deletePost
+);
 
 router.post(
 	'/',
@@ -53,6 +61,7 @@ router.post(
 	createImageUpload('imageUrl'),
 	setImageFilename,
 	validateBody(createPostSchema),
+	requireBlogRoles(['OWNER', 'EDITOR']),
 	postController.createPost
 );
 

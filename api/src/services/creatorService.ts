@@ -65,7 +65,7 @@ export const generateTitleSuggestions = async (
 
 	// Fetch blog categories and existing post titles
 	const blog = await prisma.blog.findUnique({
-		where: {id: blogId, userId: userId},
+		where: {id: blogId},
 		include: {
 			categories: true,
 			posts: {select: {title: true, slug: true, category: true}},
@@ -74,6 +74,17 @@ export const generateTitleSuggestions = async (
 
 	if (!blog) {
 		throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+	}
+
+	// Check if user is owner or member
+	const isOwner = blog.userId === userId;
+	if (!isOwner) {
+		const member = await prisma.blogMember.findUnique({
+			where: {blogId_userId: {blogId, userId}},
+		});
+		if (!member) {
+			throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+		}
 	}
 
 	const categoriesList = blog.categories
@@ -169,7 +180,7 @@ export const generatePostContent = async (
 	}
 
 	const blog = await prisma.blog.findUnique({
-		where: {id: blogId, userId: userId},
+		where: {id: blogId},
 		include: {
 			categories: true,
 			tags: true,
@@ -179,6 +190,17 @@ export const generatePostContent = async (
 
 	if (!blog) {
 		throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+	}
+
+	// Check if user is owner or member
+	const isOwner = blog.userId === userId;
+	if (!isOwner) {
+		const member = await prisma.blogMember.findUnique({
+			where: {blogId_userId: {blogId, userId}},
+		});
+		if (!member) {
+			throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+		}
 	}
 
 	const category = blog.categories.find((cat) => cat.id === categoryId);
@@ -316,8 +338,19 @@ export const generatePostEdit = async (
 		},
 	});
 
-	if (!post || post.blog.userId !== userId) {
+	if (!post) {
 		throw new NotFoundError('Post not found', 'POST_NOT_FOUND');
+	}
+
+	// Check if user is owner or member
+	const isOwner = post.blog.userId === userId;
+	if (!isOwner) {
+		const member = await prisma.blogMember.findUnique({
+			where: {blogId_userId: {blogId, userId}},
+		});
+		if (!member) {
+			throw new NotFoundError('Post not found', 'POST_NOT_FOUND');
+		}
 	}
 
 	let promptTemplate = await getPromptTemplate('post-edit', post.blogId);
