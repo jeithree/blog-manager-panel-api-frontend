@@ -22,19 +22,23 @@ export const createPostSchema = z.object({
 	description: z
 		.string()
 		.min(1, 'Description is required')
-		.max(500, 'Description must be at most 500 characters').optional(),
+		.max(500, 'Description must be at most 500 characters')
+		.optional(),
 	slug: z
 		.string()
 		.min(1, 'Slug is required')
 		.max(150, 'Slug must be at most 150 characters'),
 	imageUrl: z.string().min(1, 'Image URL is required').optional(),
 	content: z.string().min(1, 'Content is required').optional(),
+	AIGeneratedImagePrompt: z.string().optional(),
 	categoryId: z.string().min(1, 'Category ID is required'),
 	authorId: z.string().min(1, 'Author ID is required'),
-	tagIds: z.preprocess(
-		parseArrayField,
-		z.array(z.string().min(1, 'Tag ID is required'))
-	).optional(),
+	tagIds: z
+		.preprocess(
+			parseArrayField,
+			z.array(z.string().min(1, 'Tag ID is required'))
+		)
+		.optional(),
 	status: z.enum(PostStatus),
 	publishedAt: z.coerce.date().optional(),
 });
@@ -78,6 +82,7 @@ export const updatePostSchema = z
 			.optional(),
 		imageUrl: z.string().min(1, 'Image URL is required').optional(),
 		content: z.string().min(1, 'Content is required').optional(),
+		AIGeneratedImagePrompt: z.string().optional(),
 		categoryId: z.string().min(1, 'Category ID is required').optional(),
 		authorId: z.string().min(1, 'Author ID is required').optional(),
 		tagIds: z

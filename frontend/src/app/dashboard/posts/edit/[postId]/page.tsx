@@ -92,6 +92,9 @@ export default function EditPostPage() {
 				setCategoryId(postData.categoryId);
 				setSelectedTagIds(postData.tags?.map((t) => t.id) || []);
 
+				// load existing AI image prompt
+				setImagePrompt(postData.AIGeneratedImagePrompt || '');
+
 				if (postData.publishedAt) {
 					const date = new Date(postData.publishedAt);
 					setPublishDate(date.toISOString().slice(0, 16));
@@ -278,6 +281,7 @@ export default function EditPostPage() {
 				tagIds: selectedTagIds,
 				...(status && {status}),
 				...(publishAtDate && {publishedAt: publishAtDate}),
+				AIGeneratedImagePrompt: imagePrompt,
 			};
 
 			const response = await postService.updatePost(

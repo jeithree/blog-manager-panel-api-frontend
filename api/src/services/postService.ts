@@ -79,6 +79,7 @@ export const createPost = async (
 			slug: postData.slug,
 			imageUrl: imageUrl,
 			content: postData.content,
+			AIGeneratedImagePrompt: postData.AIGeneratedImagePrompt ?? null,
 			categoryId: category.id,
 			authorId: author.id,
 			blogId: blog.id,
@@ -294,6 +295,9 @@ export const updatePost = async (
 		...(fields.slug ? {slug: fields.slug} : {}),
 		...(imageUrl ? {imageUrl: imageUrl} : {}),
 		...(fields.content ? {content: fields.content} : {}),
+		...(fields.AIGeneratedImagePrompt !== undefined
+			? {AIGeneratedImagePrompt: fields.AIGeneratedImagePrompt}
+			: {}),
 		...(fields.categoryId ? {categoryId: fields.categoryId} : {}),
 		...(fields.authorId ? {authorId: fields.authorId} : {}),
 		...(fields.status ? {status: fields.status} : {}),

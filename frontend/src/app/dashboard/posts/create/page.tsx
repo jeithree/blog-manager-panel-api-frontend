@@ -369,6 +369,7 @@ export default function CreatePostPage() {
 			if (content) postData.content = content;
 			if (selectedTagIds && selectedTagIds.length > 0)
 				postData.tagIds = selectedTagIds;
+			if (imagePrompt) postData.AIGeneratedImagePrompt = imagePrompt;
 			if (status === PostStatus.SCHEDULED && publishDate) {
 				postData.publishedAt = new Date(publishDate);
 			}
