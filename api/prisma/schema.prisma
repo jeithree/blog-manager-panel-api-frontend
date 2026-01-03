@@ -112,25 +112,26 @@ model Author {
 }
 
 model Post {
-    id                String        @id @default(cuid())
-    title             String
-    description       String?       @db.Text
-    slug              String
-    imageUrl          String?
-    outline           String?       @db.Text
-    content           String?       @db.Text
-    categoryId        String
-    category          Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-    tags              Tag[]
-    authorId          String
-    author            Author        @relation(fields: [authorId], references: [id], onDelete: Cascade)
-    blogId            String
-    blog              Blog          @relation(fields: [blogId], references: [id], onDelete: Cascade)
+    id                      String        @id @default(cuid())
+    title                   String
+    description             String?       @db.Text
+    slug                    String
+    imageUrl                String?
+    outline                 String?       @db.Text
+    AIGeneratedImagePrompt  String?       @db.Text
+    content                 String?       @db.Text
+    categoryId              String
+    category                Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    tags                    Tag[]
+    authorId                String
+    author                  Author        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+    blogId                  String
+    blog                    Blog          @relation(fields: [blogId], references: [id], onDelete: Cascade)
 
-    status            PostStatus    @default(DRAFT)
-    publishedAt       DateTime?
-    createdAt         DateTime      @default(now())
-    updatedAt         DateTime      @updatedAt
+    status                  PostStatus    @default(DRAFT)
+    publishedAt             DateTime?
+    createdAt               DateTime      @default(now())
+    updatedAt               DateTime      @updatedAt
 
     @@unique([slug, blogId])
     @@index([blogId])
