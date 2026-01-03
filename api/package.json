@@ -7,6 +7,8 @@
 	"scripts": {
 		"dev": "node --watch --env-file=.env.local src/server.ts",
 		"start": "node --env-file=.env src/server.ts",
+		"dev:worker": "node --env-file=.env.local src/worker.ts",
+        "start:worker": "node --env-file=.env src/worker.ts",
 		"test": "vitest",
 		"type-check": "tsc"
 	},

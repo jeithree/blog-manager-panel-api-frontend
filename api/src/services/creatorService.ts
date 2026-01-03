@@ -8,6 +8,7 @@ import type {
 	GeneratePostEditDto,
 } from '../types/creator.ts';
 import {NotFoundError} from '../lib/appError.ts';
+import {OPENAI_API_KEY} from '../configs/basics.ts';
 
 const getPromptTemplate = async (
 	type:
@@ -125,7 +126,7 @@ export const generateTitleSuggestions = async (
 		contentToAvoid || 'No specific content to avoid.'
 	);
 
-	console.log('Prompt Template:\n', promptTemplate);
+	// console.log('Prompt Template:\n', promptTemplate);
 
 	// Call OpenAI API - wrap list in root object so JSON Schema root is an object
 	// Titles now include both title and slug from the model; accept that shape
@@ -143,7 +144,7 @@ export const generateTitleSuggestions = async (
 		),
 	});
 
-	const client = new OpenAI();
+	const client = new OpenAI({apiKey: OPENAI_API_KEY});
 	const response = await client.responses.parse({
 		model: 'gpt-5-mini',
 		input: [{role: 'user', content: promptTemplate}],
@@ -151,7 +152,7 @@ export const generateTitleSuggestions = async (
 		text: {format: zodTextFormat(TitleSuggestionsSchema, 'title_suggestions')},
 	});
 
-	console.log('OpenAI Response:\n', response);
+	// console.log('OpenAI Response:\n', response);
 
 	const parsed = TitleSuggestionsSchema.parse(JSON.parse(response.output_text));
 
@@ -182,6 +183,7 @@ export const generatePostContent = async (
 	const blog = await prisma.blog.findUnique({
 		where: {id: blogId},
 		include: {
+			authors: true,
 			categories: true,
 			tags: true,
 			posts: {select: {title: true, slug: true, category: true}},
@@ -256,7 +258,7 @@ export const generatePostContent = async (
 		contentToAvoid || 'No specific content to avoid.'
 	);
 
-	console.log('Prompt Template:\n', promptTemplate);
+	// console.log('Prompt Template:\n', promptTemplate);
 
 	// Call OpenAI API
 	const PostContentSchema = z.object({
@@ -265,7 +267,7 @@ export const generatePostContent = async (
 		tags: z.array(z.string()),
 	});
 
-	const client = new OpenAI();
+	const client = new OpenAI({apiKey: OPENAI_API_KEY});
 	const response = await client.responses.parse({
 		model: 'gpt-5-mini',
 		input: [{role: 'user', content: promptTemplate}],
@@ -273,7 +275,7 @@ export const generatePostContent = async (
 		text: {format: zodTextFormat(PostContentSchema, 'post_content')},
 	});
 
-	console.log('OpenAI Response:\n', response);
+	// console.log('OpenAI Response:\n', response);
 
 	const parsed = PostContentSchema.parse(JSON.parse(response.output_text));
 
@@ -283,6 +285,7 @@ export const generatePostContent = async (
 		description: parsed.description,
 		slug: slug,
 		content: parsed.content,
+		authorId: blog.authors[0].id,
 		categoryId: categoryId,
 		tagNames: parsed.tags,
 	};
@@ -298,14 +301,14 @@ export const generateImagePrompt = async (blogPost: string, blogId: string) => {
 		blogPost
 	);
 
-	console.log('Prompt Template:\n', promptTemplate);
+	// console.log('Prompt Template:\n', promptTemplate);
 
 	// Call OpenAI API
 	const ImagePromptSchema = z.object({
 		prompt: z.string(),
 	});
 
-	const client = new OpenAI();
+	const client = new OpenAI({apiKey: OPENAI_API_KEY});
 	const response = await client.responses.parse({
 		model: 'gpt-5-mini',
 		input: [{role: 'user', content: promptTemplate}],
@@ -313,7 +316,7 @@ export const generateImagePrompt = async (blogPost: string, blogId: string) => {
 		text: {format: zodTextFormat(ImagePromptSchema, 'image_prompt')},
 	});
 
-	console.log('OpenAI Response:\n', response);
+	// console.log('OpenAI Response:\n', response);
 
 	const parsed = ImagePromptSchema.parse(JSON.parse(response.output_text));
 	return parsed.prompt;
@@ -366,13 +369,13 @@ export const generatePostEdit = async (
 		changeRequest
 	);
 
-	console.log('Prompt Template:\n', promptTemplate);
+	// console.log('Prompt Template:\n', promptTemplate);
 
 	const PostEditSchema = z.object({
 		content: z.string(),
 	});
 
-	const client = new OpenAI();
+	const client = new OpenAI({apiKey: OPENAI_API_KEY});
 	const response = await client.responses.parse({
 		model: 'gpt-5-mini',
 		input: [{role: 'user', content: promptTemplate}],
@@ -380,7 +383,7 @@ export const generatePostEdit = async (
 		text: {format: zodTextFormat(PostEditSchema, 'post_edit')},
 	});
 
-	console.log('OpenAI Response:\n', response);
+	// console.log('OpenAI Response:\n', response);
 
 	const parsed = PostEditSchema.parse(JSON.parse(response.output_text));
 

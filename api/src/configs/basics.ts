@@ -81,3 +81,6 @@ if (!process.env.R2_ACCOUNT_ID) {
 export const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
 export const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
 export const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
+
+export const PROCESS_POST_CREATION_JOB_NAME = 'process-post-creation-job';
+export const POSTS_CREATION_QUEUE_NAME = 'post-creation-queue';

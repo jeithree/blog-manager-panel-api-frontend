@@ -1,9 +1,16 @@
 import app from './app.ts';
 import * as Logger from './helpers/logger.ts';
-import {startCronJobs} from './services/cronService.ts';
+import {
+	addJobsToPostsCreationQueue,
+	startCronJobs,
+} from './services/cronService.ts';
+import {initPostsCreationQueue} from './queue.ts';
 
-app.listen(app.get('port'), () => {
+await initPostsCreationQueue();
+
+app.listen(app.get('port'), async () => {
 	Logger.logToConsole(`Server running on http://localhost:${app.get('port')}`);
+	await addJobsToPostsCreationQueue();
 	startCronJobs();
 });
 
