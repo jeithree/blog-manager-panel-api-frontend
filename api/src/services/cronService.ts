@@ -5,7 +5,10 @@ import * as netlifyService from './netlifyService.ts';
 import * as Logger from '../helpers/logger.ts';
 import {sleep} from '../helpers/helpers.ts';
 import RedisCache from '../lib/redisCache.ts';
-import {DEV_MODE, PROCESS_POST_CREATION_JOB_NAME} from '../configs/basics.ts';
+import {
+	IS_DEV_MODE,
+	PROCESS_POST_CREATION_JOB_NAME,
+} from '../configs/basics.ts';
 import * as postService from './postService.ts';
 import * as creatorService from './creatorService.ts';
 import {getPostsCreationQueue} from '../queue.ts';
@@ -73,7 +76,7 @@ const publishScheduledPosts = async () => {
 		} scheduled post(s) at ${now.toISOString()}`
 	);
 
-	if (!DEV_MODE) {
+	if (!IS_DEV_MODE) {
 		const uniqueSiteIds = Array.from(
 			new Set(
 				scheduledPosts
@@ -94,14 +97,14 @@ const publishScheduledPosts = async () => {
 		}
 	} else {
 		Logger.logToConsole(
-			'DEV_MODE is enabled; skipping Netlify deploys after publishing scheduled posts.'
+			'IS_DEV_MODE is enabled; skipping Netlify deploys after publishing scheduled posts.'
 		);
 
 		for (const postId of postIds) {
 			try {
 				await postService.toMarkdownContent(postId);
 				Logger.logToConsole(
-					`Markdown export succeeded for published post ${postId} in DEV_MODE`
+					`Markdown export succeeded for published post ${postId} in IS_DEV_MODE`
 				);
 			} catch (error) {
 				Logger.logToConsole(

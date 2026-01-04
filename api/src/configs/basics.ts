@@ -1,8 +1,8 @@
 if (!process.env.PORT) {
 	throw new Error('PORT is not defined in environment variables');
 }
-if (!process.env.DEV_MODE) {
-	throw new Error('DEV_MODE is not defined in environment variables');
+if (!process.env.IS_DEV_MODE) {
+	throw new Error('IS_DEV_MODE is not defined in environment variables');
 }
 if (!process.env.API_URL) {
 	throw new Error('API_URL is not defined in environment variables');
@@ -13,14 +13,8 @@ if (!process.env.SITE_URL) {
 if (!process.env.TIME_ZONE) {
 	throw new Error('TIME_ZONE is not defined in environment variables');
 }
-if (!process.env.SESSION_NAME) {
-	throw new Error('SESSION_NAME is not defined in environment variables');
-}
 if (!process.env.SESSION_SECRET) {
 	throw new Error('SESSION_SECRET is not defined in environment variables');
-}
-if (!process.env.SESSION_MAX_AGE) {
-	throw new Error('SESSION_MAX_AGE is not defined in environment variables');
 }
 if (!process.env.SESSION_REDIS_PREFIX) {
 	throw new Error(
@@ -29,16 +23,14 @@ if (!process.env.SESSION_REDIS_PREFIX) {
 }
 
 export const PORT = Number(process.env.PORT);
-export const DEV_MODE = process.env.DEV_MODE === 'true';
-export const API_URL = DEV_MODE
+export const IS_DEV_MODE = process.env.NODE_ENV === 'development';
+export const API_URL = IS_DEV_MODE
 	? 'http://localhost:' + PORT
 	: process.env.API_URL;
 export const TIME_ZONE = process.env.TIME_ZONE;
 export const SITE_URL = process.env.SITE_URL;
-export const SESSION_NAME = process.env.SESSION_NAME;
 export const SESSION_SECRET = process.env.SESSION_SECRET;
-export const SESSION_MAX_AGE = Number(process.env.SESSION_MAX_AGE);
-export const SESSION_PREFIX = process.env.SESSION_REDIS_PREFIX;
+export const SESSION_REDIS_PREFIX = process.env.SESSION_REDIS_PREFIX;
 
 if (!process.env.REDIS_HOST) {
 	throw new Error('REDIS_HOST is not defined in environment variables');

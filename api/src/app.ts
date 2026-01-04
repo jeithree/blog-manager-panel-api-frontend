@@ -5,7 +5,13 @@ import cors from 'cors';
 import session from 'express-session';
 import {RedisStore} from 'connect-redis';
 import redisClient from './redisClient.ts';
-import {PORT, API_URL, SITE_URL, SESSION_SECRET, SESSION_PREFIX} from './configs/basics.ts';
+import {
+	PORT,
+	API_URL,
+	SITE_URL,
+	SESSION_SECRET,
+	SESSION_REDIS_PREFIX,
+} from './configs/basics.ts';
 import {SESSION_COOKIE} from './configs/cookies.ts';
 import {errorHandler} from './middlewares/errorHandler.ts';
 import router from './routes/index.ts';
@@ -36,7 +42,7 @@ app.use(
 		cookie: SESSION_COOKIE.options,
 		store: new RedisStore({
 			client: redisClient,
-			prefix: SESSION_PREFIX,
+			prefix: SESSION_REDIS_PREFIX,
 		}),
 	})
 );

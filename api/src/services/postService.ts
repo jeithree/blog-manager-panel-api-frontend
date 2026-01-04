@@ -17,7 +17,7 @@ import {
 	ForbiddenError,
 } from '../lib/appError.ts';
 import * as R2Service from './R2Service.ts';
-import {DEV_MODE} from '../configs/basics.ts';
+import {IS_DEV_MODE} from '../configs/basics.ts';
 
 export const createPost = async (
 	userId: string,
@@ -103,7 +103,7 @@ export const createPost = async (
 
 	const willPublish = postData.status === PostStatus.PUBLISHED;
 	if (willPublish && blog.netlifySiteId) {
-		if (!DEV_MODE) {
+		if (!IS_DEV_MODE) {
 			try {
 				const deploy = await netlifyService.triggerRebuild(blog.netlifySiteId);
 				await netlifyService.waitForDeploy(deploy.id);
@@ -333,7 +333,7 @@ export const updatePost = async (
 		throw new ForbiddenError('Only the blog owner can publish posts');
 	}
 	if (willPublish && blog.netlifySiteId) {
-		if (!DEV_MODE) {
+		if (!IS_DEV_MODE) {
 			try {
 				const deploy = await netlifyService.triggerRebuild(blog.netlifySiteId);
 				await netlifyService.waitForDeploy(deploy.id);
