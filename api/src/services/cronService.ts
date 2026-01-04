@@ -97,7 +97,7 @@ const publishScheduledPosts = async () => {
 		}
 	} else {
 		Logger.logToConsole(
-			'IS_DEV_MODE is enabled; skipping Netlify deploys after publishing scheduled posts.'
+			'IS_DEV_MODE is true; skipping Netlify deploys after publishing scheduled posts.'
 		);
 
 		for (const postId of postIds) {
