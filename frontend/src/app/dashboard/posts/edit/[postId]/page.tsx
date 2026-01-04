@@ -508,26 +508,9 @@ export default function EditPostPage() {
 					<CardHeader>
 						<CardTitle>Media & Publishing</CardTitle>
 					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="space-y-2">
-							<Label htmlFor="image">Featured Image</Label>
-							{post.imageUrl && !imageFile && (
-								<div className="mb-2">
-									<img
-										src={post.imageUrl}
-										alt="Current featured image"
-										className="max-w-xs rounded-md"
-									/>
-								</div>
-							)}
-							<Input
-								id="image"
-								type="file"
-								accept="image/*"
-								onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-							/>
-
-							<div className="space-y-2">
+					<CardContent className="space-y-6">
+						<div className="space-y-6">
+							<div className="space-y-4">
 								<div className="flex justify-between items-center">
 									<Label>Image Prompt (for AI generation)</Label>
 									<div className="flex gap-2">
@@ -543,7 +526,7 @@ export default function EditPostPage() {
 										{imagePrompt && (
 											<Button
 												size="sm"
-												variant="outline"
+												className="bg-slate-600 text-white hover:bg-slate-700"
 												onClick={() => copyTextToClipboard(imagePrompt, true)}>
 												{copiedPrompt ? 'Copied' : 'Copy Prompt'}
 											</Button>
@@ -551,6 +534,7 @@ export default function EditPostPage() {
 									</div>
 								</div>
 								<Textarea
+									className="max-h-44"
 									value={imagePrompt}
 									onChange={(e) => {
 										setImagePrompt(e.target.value);
@@ -558,6 +542,40 @@ export default function EditPostPage() {
 									}}
 									placeholder="Describe the image you want"
 								/>
+							</div>
+							<div className="space-y-4">
+								<Label htmlFor="image">Featured Image</Label>
+								{post.imageUrl && !imageFile && (
+									<div className="mb-2">
+										<img
+											src={post.imageUrl}
+											alt="Current featured image"
+											className="max-w-xs rounded-md"
+										/>
+									</div>
+								)}
+								<div className="flex items-center gap-2">
+									<Input
+										id="image"
+										type="file"
+										accept="image/*"
+										onChange={(e) => {
+											const file = e.target.files?.[0];
+											if (file) setImageFile(file);
+										}}
+									/>
+									<Button
+										size="sm"
+										className="bg-slate-600 text-white hover:bg-slate-700"
+										onClick={() => {
+											const el = document.getElementById(
+												'image'
+											) as HTMLInputElement | null;
+											el?.click();
+										}}>
+										Choose Image
+									</Button>
+								</div>
 							</div>
 						</div>
 
