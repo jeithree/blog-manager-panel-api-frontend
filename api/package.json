@@ -8,7 +8,7 @@
 		"dev": "node --watch --env-file=.env.local src/server.ts",
 		"start": "node --env-file=.env src/server.ts",
 		"dev:worker": "node --env-file=.env.local src/worker.ts",
-        "start:worker": "node --env-file=.env src/worker.ts",
+		"start:worker": "node --env-file=.env src/worker.ts",
 		"test": "vitest",
 		"type-check": "tsc"
 	},
@@ -19,6 +19,7 @@
 		"@aws-sdk/client-s3": "^3.955.0",
 		"@prisma/client": "^6.17.1",
 		"bcrypt": "^5.1.1",
+		"bullmq": "^5.66.4",
 		"connect-redis": "^9.0.0",
 		"cookie-parser": "^1.4.7",
 		"cors": "^2.8.5",
