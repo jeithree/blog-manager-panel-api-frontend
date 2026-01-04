@@ -1,8 +1,8 @@
 if (!process.env.PORT) {
 	throw new Error('PORT is not defined in environment variables');
 }
-if (!process.env.IS_DEV_MODE) {
-	throw new Error('IS_DEV_MODE is not defined in environment variables');
+if (!process.env.NODE_ENV) {
+	throw new Error('NODE_ENV is not defined in environment variables');
 }
 if (!process.env.API_URL) {
 	throw new Error('API_URL is not defined in environment variables');
