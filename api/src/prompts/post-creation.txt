@@ -21,7 +21,7 @@ Create the blog post (1000–1200 words) in MD format. Use ##, ###, and any MD s
 # Rules:
 - Dont mention "practical" or "story" in the post description, unless necessary.
 - Dont ask for comments or feedback in the post, dont offer downloads, cause the blog doesnt have comment section.
-- NEVER add the same internal link more than once.
+- Dont add the same internal link more than once.
 - Ensure the post is SEO-optimized with relevant keywords naturally integrated.
 
 # Category it belongs to:

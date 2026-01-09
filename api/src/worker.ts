@@ -71,21 +71,50 @@ const worker = new Worker(
 					);
 				}
 
+				// generate the image prompt with 3 attemps
+				let imagePrompt = '';
+				let imageAttempts = 0;
+				let imageMaxAttempts = 3;
+
+				while (imageAttempts < imageMaxAttempts) {
+					try {
+						imagePrompt = await creatorService.generateImagePrompt(
+							post.content,
+							blogId
+						);
+						break; // exit loop if successful
+					} catch (error) {
+						imageAttempts++;
+						await Logger.logToFile(
+							`Error generating image prompt for blog ${blogId} (attempt ${imageAttempts}): ${String(
+								error
+							)}`,
+							'warn'
+						);
+						if (imageAttempts >= imageMaxAttempts) {
+							break; // proceed without image prompt
+						}
+						await sleep(5000); // wait before retrying
+						continue;
+					}
+				}
+
 				const postData = {
 					...post,
 					tagIds,
+					AIGeneratedImagePrompt: imagePrompt,
 					status: 'DRAFT' as const,
 				};
 
-				let attempts = 0;
-				const maxAttempts = 3;
-				while (attempts < maxAttempts) {
+				let savingAttempts = 0;
+				const sabingMaxAttempts = 3;
+				while (savingAttempts < sabingMaxAttempts) {
 					try {
 						await postService.createPost(userId, postData, undefined);
 						break;
 					} catch (error) {
-						attempts++;
-						if (attempts >= maxAttempts) {
+						savingAttempts++;
+						if (savingAttempts >= sabingMaxAttempts) {
 							throw error;
 						}
 						await sleep(5000); // wait before retrying
@@ -100,7 +129,7 @@ const worker = new Worker(
 			host: REDIS_HOST,
 			port: REDIS_PORT,
 		},
-		concurrency: 3,
+		concurrency: 2,
 	}
 );
 
