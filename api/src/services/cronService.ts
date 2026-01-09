@@ -100,6 +100,7 @@ const publishScheduledPosts = async () => {
 			'IS_DEV_MODE is true; skipping Netlify deploys after publishing scheduled posts.'
 		);
 
+        // this is done for manual publish when running locally and copying manually the markdown to static site (astro)
 		for (const postId of postIds) {
 			try {
 				await postService.toMarkdownContent(postId);
