@@ -79,6 +79,7 @@ export const getBlogs = async (userId: string) => {
 			domain: true,
 			description: true,
 			netlifySiteId: true,
+            apiKey: true,
 			R2BucketName: true,
 			R2CustomDomain: true,
 			createdAt: true,

@@ -8,6 +8,7 @@ export type Blog = {
 	domain: string;
 	description: string;
 	netlifySiteId: string;
+	apiKey: string;
 	R2BucketName: string;
 	R2CustomDomain: string;
 	createdAt: string;

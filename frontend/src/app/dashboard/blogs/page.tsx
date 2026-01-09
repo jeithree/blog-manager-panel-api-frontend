@@ -116,6 +116,12 @@ export default function BlogsPage() {
 										<div className="grid gap-3 pt-3 border-t">
 											<div>
 												<p className="text-xs font-medium text-muted-foreground">
+													Blog API Key
+												</p>
+												<p className="text-xs truncate">{blog.apiKey}</p>
+											</div>
+											<div>
+												<p className="text-xs font-medium text-muted-foreground">
 													Netlify Site
 												</p>
 												<p className="text-xs truncate">{blog.netlifySiteId}</p>
