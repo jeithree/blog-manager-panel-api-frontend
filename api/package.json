@@ -6,9 +6,9 @@
 	"type": "module",
 	"scripts": {
 		"dev": "node --watch --env-file=.env.local src/server.ts",
-		"start": "node --env-file=.env src/server.ts",
 		"dev:worker": "node --env-file=.env.local src/worker.ts",
-		"worker": "node --env-file=.env src/worker.ts",
+		"start": "npx prisma migrate deploy && node src/server.ts",
+		"worker": "npx prisma migrate deploy && node src/worker.ts",
 		"test": "vitest",
 		"type-check": "tsc"
 	},

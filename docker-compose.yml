@@ -1,0 +1,75 @@
+services:
+  mariadb:
+    image: mariadb:latest
+    env_file:
+      - ./api/.env
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'healthcheck.sh', '--connect', '--innodb_initialized']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2-alpine
+    env_file:
+      - ./api/.env
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    working_dir: /usr/src/app
+    env_file:
+      - ./api/.env
+    ports:
+      - '${PORT:-5000}:5000'
+    depends_on:
+      - mariadb
+      - redis
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    working_dir: /usr/src/app
+    env_file:
+      - ./api/.env
+    command: npm run worker
+    depends_on:
+      - mariadb
+      - redis
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    working_dir: /usr/src/app
+    env_file:
+      - ./frontend/.env
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  redis_data:
