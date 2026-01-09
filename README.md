@@ -440,6 +440,22 @@ For detailed API documentation, refer to the route files in [api/src/routes](api
 | --------------------- | --------------- | -------- | ----------------------- |
 | `NEXT_PUBLIC_API_URL` | Backend API URL | Yes      | `http://localhost:5000` |
 
+## ⚠️ Important Notes & Limitations
+
+### Netlify Integration Requirement
+
+Each blog in the system requires a Netlify site ID (`netlifyId`) for deployment and hosting. You must have a Netlify site set up before creating a blog in this system.
+
+### Multi-Tenancy Considerations
+
+The current implementation uses **global configuration** for third-party services rather than per-blog configuration. The following environment variables are shared across all blogs:
+
+- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`
+- `OPENAI_API_KEY`
+- `NETLIFY_API_TOKEN`
+
+**Note**: This approach is not ideal for true multi-tenancy. Future improvements will include moving these credentials to the Prisma schema to enable per-blog configuration, allowing different blogs to use different storage buckets, AI accounts, and deployment targets, but as per now, im the only one using this so im keeping like this.
+
 ## 📝 License
 
 This project is private and proprietary.
