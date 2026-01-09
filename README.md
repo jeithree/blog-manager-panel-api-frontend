@@ -450,7 +450,7 @@ Each blog in the system requires a Netlify site ID (`netlifyId`) for deployment 
 
 The current implementation uses **global configuration** for third-party services rather than per-blog configuration. The following environment variables are shared across all blogs:
 
-- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`
+- `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`
 - `OPENAI_API_KEY`
 - `NETLIFY_API_TOKEN`
 
