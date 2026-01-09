@@ -131,7 +131,7 @@ export const startCronJobs = () => {
 
 export const addJobsToPostsCreationQueue = async () => {
 	// run every day at 8 AM, but only enqueue for blogs whose last post is >= 5 days old
-	schedule.scheduleJob('0 8 * * *', async () => {
+	schedule.scheduleJob('0 9 * * *', async () => {
 		const queue = getPostsCreationQueue();
 
 		const blogs = await prisma.blog.findMany({});
