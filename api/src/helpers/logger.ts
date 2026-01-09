@@ -1,25 +1,24 @@
-import path from 'node:path';
-import {promises as fs} from 'node:fs';
 import {DateTime} from 'luxon';
 import {IS_DEV_MODE, TIME_ZONE} from '../configs/basics.ts';
-
-const __dirname = import.meta.dirname;
 
 type LogType = 'error' | 'warn' | 'info' | 'debug';
 
 export const logToFile = async (error: unknown, type: LogType) => {
-	const relativeFilePath = `../../logs/${type}.txt`;
-	const logFilePath = path.join(__dirname, relativeFilePath);
 	const timestamp = DateTime.now()
 		.setZone(TIME_ZONE)
 		.toFormat('yyyy-MM-dd HH:mm:ss');
 
 	const errorContent = error instanceof Error ? error.stack : String(error);
 
-	const logMessage = `[${timestamp}] ${errorContent}\n`;
-	await fs.appendFile(logFilePath, logMessage);
-	if (IS_DEV_MODE) {
+	const logMessage = `[${timestamp}] [${type.toUpperCase()}] ${errorContent}`;
+
+	// In Docker, log to stdout/stderr instead of files
+	if (type === 'error') {
 		console.error(logMessage);
+	}
+
+	if (type === 'warn' || type === 'info' || type === 'debug') {
+		console.log(logMessage);
 	}
 };
 
