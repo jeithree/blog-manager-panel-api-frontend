@@ -444,7 +444,7 @@ For detailed API documentation, refer to the route files in [api/src/routes](api
 
 ### Netlify Integration Requirement
 
-Each blog in the system requires a Netlify site ID (`netlifyId`) for deployment and hosting. You must have a Netlify site set up before creating a blog in this system.
+Each blog in the system requires a Netlify site ID (`netlifySiteId`) for deployment and hosting. You must have a Netlify site set up before creating a blog in this system.
 
 ### Multi-Tenancy Considerations
 
