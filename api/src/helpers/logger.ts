@@ -9,10 +9,8 @@ export const logToFile = async (error: unknown, type: LogType) => {
 		.toFormat('yyyy-MM-dd HH:mm:ss');
 
 	const errorContent = error instanceof Error ? error.stack : String(error);
-
 	const logMessage = `[${timestamp}] [${type.toUpperCase()}] ${errorContent}`;
 
-	// In Docker, log to stdout/stderr instead of files
 	if (type === 'error') {
 		console.error(logMessage);
 	}
