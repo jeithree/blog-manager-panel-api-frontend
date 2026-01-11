@@ -4,8 +4,10 @@ import {
 	addJobsToPostsCreationQueue,
 	startCronJobs,
 } from './services/cronService.ts';
+import {createInitialAdminUser} from './services/adminService.ts';
 import {initPostsCreationQueue} from './queue.ts';
 
+await createInitialAdminUser();
 await initPostsCreationQueue();
 
 app.listen(app.get('port'), async () => {
