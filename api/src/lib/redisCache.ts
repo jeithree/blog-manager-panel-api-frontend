@@ -16,7 +16,7 @@ class RedisCache {
 			await redisClient.setEx(`api:${key}`, ttl, JSON.stringify(data));
 			return true;
 		} catch (error) {
-			Logger.logToFile(`Cache set error for key ${key}: ${error}`, 'warn');
+			Logger.log(`Cache set error for key ${key}: ${error}`, 'warn');
 			return false;
 		}
 	}
@@ -31,7 +31,7 @@ class RedisCache {
 			const data = await redisClient.get(`api:${key}`);
 			return data ? JSON.parse(data) : null;
 		} catch (error) {
-			Logger.logToFile(`Cache get error for key ${key}: ${error}`, 'warn');
+			Logger.log(`Cache get error for key ${key}: ${error}`, 'warn');
 			return null;
 		}
 	}
@@ -46,7 +46,7 @@ class RedisCache {
 			await redisClient.del(`api:${key}`);
 			return true;
 		} catch (error) {
-			Logger.logToFile(`Cache deletion error for key ${key}: ${error}`, 'warn');
+			Logger.log(`Cache deletion error for key ${key}: ${error}`, 'warn');
 			return false;
 		}
 	}
@@ -63,7 +63,7 @@ class RedisCache {
 			}
 			return true;
 		} catch (error) {
-			Logger.logToFile(`Cache clear error: ${error}`, 'warn');
+			Logger.log(`Cache clear error: ${error}`, 'warn');
 			return false;
 		}
 	}
@@ -88,7 +88,7 @@ class RedisCache {
 			}
 			return true;
 		} catch (error) {
-			Logger.logToFile(
+			Logger.log(
 				`Cache deleteByPattern error for ${pattern}: ${error}`,
 				'warn'
 			);

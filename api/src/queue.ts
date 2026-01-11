@@ -21,7 +21,7 @@ export const initPostsCreationQueue = async () => {
 		await queue.waitUntilReady();
 		postsCreationQueue = queue;
 
-		Logger.logToConsole(`Queue "${POSTS_CREATION_QUEUE_NAME}" is ready.`);
+		Logger.log(`Queue "${POSTS_CREATION_QUEUE_NAME}" is ready.`, 'info');
 	} catch (error) {
 		throw new Error(
 			`Failed to initialize queue "${POSTS_CREATION_QUEUE_NAME}": ${error}`
@@ -39,5 +39,5 @@ export const getPostsCreationQueue = () => {
 // const queueEvents = new QueueEvents(POSTS_CREATION_QUEUE_NAME);
 
 // queueEvents.on('completed', ({jobId}) => {
-// 	Logger.logToConsole(`Job completed with ID: ${jobId}`);
+// 	Logger.log(`Job completed with ID: ${jobId}`, 'info');
 // });

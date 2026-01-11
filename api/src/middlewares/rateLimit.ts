@@ -7,7 +7,7 @@ export const loginLimiter = rateLimit({
 	windowMs: 15 * 60 * 1000,
 	max: 3,
 	handler: (req: Request, _res: Response, next: NextFunction) => {
-		Logger.logToFile(`Rate limit exceeded for login: ${req.ip}`, 'info');
+		Logger.log(`Rate limit exceeded for login: ${req.ip}`, 'info');
 		next(
 			new RateLimitError(
 				'You have exceeded the maximum number of login attempts. Please try again later.',
@@ -21,10 +21,7 @@ export const createUserLimiter = rateLimit({
 	windowMs: 60 * 60 * 1000,
 	max: 10,
 	handler: (req: Request, _res: Response, next: NextFunction) => {
-		Logger.logToFile(
-			`Rate limit exceeded for user creation: ${req.ip}`,
-			'info'
-		);
+		Logger.log(`Rate limit exceeded for user creation: ${req.ip}`, 'info');
 		next(
 			new RateLimitError(
 				'You have exceeded the maximum number of user creation attempts. Please try again later.',

@@ -19,7 +19,7 @@ export const errorHandler = async (
 	}
 
 	// Unknown error
-	await Logger.logToFile(`Unhandled error: ${err.stack || err.message}`, 'error');
+	await Logger.log(`Unhandled error: ${err.stack || err.message}`, 'error');
 	return res.status(500).json({
 		success: false,
 		error: {

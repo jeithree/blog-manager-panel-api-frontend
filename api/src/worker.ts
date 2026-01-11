@@ -32,7 +32,7 @@ const worker = new Worker(
 					break; // exit loop if successful
 				} catch (error) {
 					attempts++;
-					await Logger.logToFile(
+					await Logger.log(
 						`Error generating post content for blog ${blogId} (attempt ${attempts}): ${String(
 							error
 						)}`,
@@ -65,9 +65,10 @@ const worker = new Worker(
 						}
 					}
 				} catch (err) {
-					await Logger.logToFile(err, 'warn');
-					Logger.logToConsole(
-						`Failed mapping tags for blog ${blogId}: ${String(err)}`
+					await Logger.log(err, 'warn');
+					Logger.log(
+						`Failed mapping tags for blog ${blogId}: ${String(err)}`,
+						'warn'
 					);
 				}
 
@@ -85,7 +86,7 @@ const worker = new Worker(
 						break; // exit loop if successful
 					} catch (error) {
 						imageAttempts++;
-						await Logger.logToFile(
+						await Logger.log(
 							`Error generating image prompt for blog ${blogId} (attempt ${imageAttempts}): ${String(
 								error
 							)}`,
@@ -134,11 +135,11 @@ const worker = new Worker(
 );
 
 worker.on('completed', (job) => {
-	Logger.logToConsole(`Job completed successfully, jobId: ${job.id}`);
+	Logger.log(`Job completed successfully, jobId: ${job.id}`, 'info');
 });
 
 worker.on('failed', (job, err) => {
-	Logger.logToConsole(`Job failed, jobId: ${job?.id}, error: ${err.message}`);
+	Logger.log(`Job failed, jobId: ${job?.id}, error: ${err.message}`, 'error');
 });
 
-Logger.logToConsole(`Worker for queue "${POSTS_CREATION_QUEUE_NAME}" started.`);
+Logger.log(`Worker for queue "${POSTS_CREATION_QUEUE_NAME}" started.`, 'info');

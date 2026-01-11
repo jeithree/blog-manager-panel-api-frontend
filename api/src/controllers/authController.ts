@@ -36,10 +36,7 @@ export const logout = async (
 	try {
 		req.session.destroy(async (err) => {
 			if (err) {
-				await Logger.logToFile(
-					`Error destroying session in logout: ${err}`,
-					'error'
-				);
+				await Logger.log(`Error destroying session in logout: ${err}`, 'error');
 			}
 		});
 

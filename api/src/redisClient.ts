@@ -7,9 +7,11 @@ const redisClient = createClient({
 	password: undefined,
 });
 
-redisClient.on('error', (err) => Logger.logToConsole(`Redis Client Error: ${err}`));
-redisClient.on('connect', () => Logger.logToConsole('Redis: connecting...'));
-redisClient.on('ready', () => Logger.logToConsole('Redis: ready'));
+redisClient.on('error', (err) =>
+	Logger.log(`Redis Client Error: ${err}`, 'error')
+);
+redisClient.on('connect', () => Logger.log('Redis: connecting...', 'info'));
+redisClient.on('ready', () => Logger.log('Redis: ready', 'info'));
 
 await redisClient.connect();
 export default redisClient;

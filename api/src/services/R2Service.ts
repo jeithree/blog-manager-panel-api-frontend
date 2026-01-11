@@ -68,7 +68,7 @@ export const deleteImageFromR2 = async (
 
 	const result = await client.send(command);
 	if (result.$metadata.httpStatusCode !== 204) {
-		await Logger.logToFile(
+		await Logger.log(
 			`Failed to delete image ${key} from R2 bucket ${bucketName}`,
 			'warn'
 		);

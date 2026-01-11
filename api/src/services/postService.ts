@@ -107,16 +107,18 @@ export const createPost = async (
 			try {
 				const deploy = await netlifyService.triggerRebuild(blog.netlifySiteId);
 				await netlifyService.waitForDeploy(deploy.id);
-				Logger.logToConsole(
-					`Post publish triggered Netlify deploy (site: ${blog.netlifySiteId}, deploy: ${deploy.id})`
+				Logger.log(
+					`Post publish triggered Netlify deploy (site: ${blog.netlifySiteId}, deploy: ${deploy.id})`,
+					'info'
 				);
 			} catch (error) {
-				Logger.logToConsole(
+				Logger.log(
 					`Netlify deploy failed after publishing post ${post.id}: ${String(
 						error
-					)}`
+					)}`,
+					'info'
 				);
-				await Logger.logToFile(error, 'error');
+				await Logger.log(error, 'error');
 				throw new BadRequestError(
 					'Failed to trigger site deploy after publishing the post',
 					'DEPLOY_FAILED'
@@ -337,16 +339,18 @@ export const updatePost = async (
 			try {
 				const deploy = await netlifyService.triggerRebuild(blog.netlifySiteId);
 				await netlifyService.waitForDeploy(deploy.id);
-				Logger.logToConsole(
-					`Post publish triggered Netlify deploy (site: ${blog.netlifySiteId}, deploy: ${deploy.id})`
+				Logger.log(
+					`Post publish triggered Netlify deploy (site: ${blog.netlifySiteId}, deploy: ${deploy.id})`,
+					'info'
 				);
 			} catch (error) {
-				Logger.logToConsole(
+				Logger.log(
 					`Netlify deploy failed after publishing post ${postId}: ${String(
 						error
-					)}`
+					)}`,
+					'info'
 				);
-				await Logger.logToFile(error, 'error');
+				await Logger.log(error, 'error');
 				throw new BadRequestError(
 					'Failed to trigger site deploy after publishing the post',
 					'DEPLOY_FAILED'
@@ -510,7 +514,7 @@ export const toMarkdownContent = async (postId: string) => {
 	}
 
 	if (post.status !== PostStatus.PUBLISHED) {
-		await Logger.logToFile(
+		await Logger.log(
 			`Attempted to export non-published post ${postId} to markdown`,
 			'error'
 		);

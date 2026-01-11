@@ -53,7 +53,7 @@ export const createInitialAdminUser = async () => {
 			},
 		});
 	} catch (error) {
-		Logger.logToFile(error, 'error');
+		Logger.log(error, 'error');
 		throw error;
 	}
 };

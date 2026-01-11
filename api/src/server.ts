@@ -11,7 +11,7 @@ await createInitialAdminUser();
 await initPostsCreationQueue();
 
 app.listen(app.get('port'), async () => {
-	Logger.logToConsole(`Server running on http://localhost:${app.get('port')}`);
+	Logger.log(`Server running on http://localhost:${app.get('port')}`, 'info');
 	await addJobsToPostsCreationQueue();
 	startCronJobs();
 });
