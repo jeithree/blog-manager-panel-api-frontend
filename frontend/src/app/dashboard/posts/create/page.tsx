@@ -2,6 +2,7 @@
 
 import React, {useState, useEffect, useCallback} from 'react';
 import {useRouter} from 'next/navigation';
+import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -73,9 +74,12 @@ export default function CreatePostPage() {
 				if (response.data.length > 0 && !selectedBlogId) {
 					setSelectedBlogId(response.data[0].id);
 				}
+			} else {
+				toast.error(response.error?.message || 'Failed to load blogs');
 			}
 		} catch (error) {
 			console.error('Failed to load blogs:', error);
+			toast.error('An unexpected error occurred while loading blogs');
 		}
 	}, [selectedBlogId]);
 
@@ -94,9 +98,13 @@ export default function CreatePostPage() {
 
 			if (response.success && response.data) {
 				setAiReviewIssues(response.data.AIPostReviewIssues || '');
+				toast.success('Content reviewed successfully');
+			} else {
+				toast.error(response.error?.message || 'Failed to review content');
 			}
 		} catch (error) {
 			console.error('Failed to review content:', error);
+			toast.error('An unexpected error occurred');
 		} finally {
 			setIsReviewing(false);
 		}
@@ -122,6 +130,7 @@ export default function CreatePostPage() {
 			}
 		} catch (error) {
 			console.error('Failed to load categories, tags, and authors:', error);
+			toast.error('Failed to load categories, tags, and authors');
 		}
 	}, [selectedBlogId]);
 
@@ -180,9 +189,13 @@ export default function CreatePostPage() {
 			if (response.success && response.data) {
 				// Keep the grouped structure
 				setTitleSuggestions(response.data);
+				toast.success('Title suggestions generated successfully');
+			} else {
+				toast.error(response.error?.message || 'Failed to generate titles');
 			}
 		} catch (error) {
 			console.error('Failed to generate titles:', error);
+			toast.error('An unexpected error occurred');
 		} finally {
 			setIsLoading(false);
 		}
@@ -215,9 +228,13 @@ export default function CreatePostPage() {
 
 				// Set AI review issues
 				setAiReviewIssues(response.data.AIPostReviewIssues || '');
+				toast.success('Content generated successfully');
+			} else {
+				toast.error(response.error?.message || 'Failed to generate content');
 			}
 		} catch (error) {
 			console.error('Failed to generate content:', error);
+			toast.error('An unexpected error occurred');
 		} finally {
 			setIsLoading(false);
 		}
@@ -235,9 +252,15 @@ export default function CreatePostPage() {
 
 			if (response.success && response.data) {
 				setImagePrompt(response.data.imagePrompt || '');
+				toast.success('Image prompt generated successfully');
+			} else {
+				toast.error(
+					response.error?.message || 'Failed to generate image prompt'
+				);
 			}
 		} catch (error) {
 			console.error('Failed to generate image prompt:', error);
+			toast.error('An unexpected error occurred');
 		} finally {
 			setIsLoading(false);
 		}
@@ -258,8 +281,10 @@ export default function CreatePostPage() {
 				setCopiedText(label ?? text);
 				setTimeout(() => setCopiedText(''), 2000);
 			}
+			toast.success('Copied to clipboard');
 		} catch (err) {
 			console.error('Copy failed', err);
+			toast.error('Failed to copy to clipboard');
 		}
 	};
 
@@ -409,10 +434,16 @@ export default function CreatePostPage() {
 			);
 
 			if (response.success) {
-				router.push('/dashboard/posts');
+				toast.success('Post created successfully');
+				setTimeout(() => {
+					router.push('/dashboard/posts');
+				}, 1500);
+			} else {
+				toast.error(response.error || 'Failed to create post');
 			}
 		} catch (error) {
 			console.error('Failed to create post:', error);
+			toast.error('An unexpected error occurred');
 		} finally {
 			setIsLoading(false);
 		}

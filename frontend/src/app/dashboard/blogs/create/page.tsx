@@ -2,6 +2,7 @@
 
 import React, {useState} from 'react';
 import {useRouter} from 'next/navigation';
+import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -39,11 +40,16 @@ export default function CreateBlogPage() {
 			const response = await blogService.createBlog(formData);
 
 			if (response.success) {
-				router.push('/dashboard/blogs');
+				toast.success('Blog created successfully');
+				setTimeout(() => {
+					router.push('/dashboard/blogs');
+				}, 1000);
+			} else {
+				toast.error(response.error?.message || 'Failed to create blog');
 			}
 		} catch (error) {
 			console.error('Failed to create blog:', error);
-			alert('Failed to create blog. Please try again.');
+			toast.error('An unexpected error occurred');
 		} finally {
 			setIsLoading(false);
 		}

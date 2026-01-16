@@ -2,6 +2,7 @@
 
 import React, {useState, useEffect, useCallback, useMemo} from 'react';
 import {useRouter, useParams} from 'next/navigation';
+import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -104,11 +105,16 @@ export default function EditBlogPage() {
 			const response = await blogService.updateBlog(blogId, formData);
 
 			if (response.success) {
-				router.push('/dashboard/blogs');
+				toast.success('Blog updated successfully');
+				setTimeout(() => {
+					router.push('/dashboard/blogs');
+				}, 1000);
+			} else {
+				toast.error(response.error?.message || 'Failed to update blog');
 			}
 		} catch (error) {
 			console.error('Failed to update blog:', error);
-			alert('Failed to update blog. Please try again.');
+			toast.error('An unexpected error occurred');
 		} finally {
 			setIsSaving(false);
 		}
@@ -125,10 +131,13 @@ export default function EditBlogPage() {
 			if (res.success) {
 				setNewMemberUserId('');
 				loadMembers();
+				toast.success('Member added successfully');
+			} else {
+				toast.error(res.error?.message || 'Failed to add member');
 			}
 		} catch (err) {
 			console.error('Failed to add member', err);
-			alert('Failed to add member');
+			toast.error('An unexpected error occurred');
 		}
 	};
 
@@ -137,10 +146,15 @@ export default function EditBlogPage() {
 		if (!confirm('Remove this editor from the blog?')) return;
 		try {
 			const res = await blogMemberService.removeMember(blogId, userId);
-			if (res.success) loadMembers();
+			if (res.success) {
+				loadMembers();
+				toast.success('Member removed successfully');
+			} else {
+				toast.error(res.error?.message || 'Failed to remove member');
+			}
 		} catch (err) {
 			console.error('Failed to remove member', err);
-			alert('Failed to remove member');
+			toast.error('An unexpected error occurred');
 		}
 	};
 

@@ -2,6 +2,7 @@
 
 import {useState, useEffect, useCallback} from 'react';
 import {useRouter, useParams} from 'next/navigation';
+import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -227,9 +228,15 @@ export default function EditPostPage() {
 
 			if (response.success && response.data) {
 				setImagePrompt(response.data.imagePrompt || '');
+				toast.success('Image prompt generated successfully');
+			} else {
+				toast.error(
+					response.error?.message || 'Failed to generate image prompt'
+				);
 			}
 		} catch (error) {
 			console.error('Failed to generate image prompt:', error);
+			toast.error('An unexpected error occurred');
 		} finally {
 			setIsGeneratingImagePrompt(false);
 		}
@@ -275,9 +282,13 @@ export default function EditPostPage() {
 
 			if (response.success && response.data) {
 				setAiReviewIssues(response.data.AIPostReviewIssues || '');
+				toast.success('Content reviewed successfully');
+			} else {
+				toast.error(response.error?.message || 'Failed to review content');
 			}
 		} catch (error) {
 			console.error('Failed to review content:', error);
+			toast.error('An unexpected error occurred');
 		} finally {
 			setIsReviewing(false);
 		}
@@ -290,8 +301,10 @@ export default function EditPostPage() {
 				setCopiedPrompt(true);
 				setTimeout(() => setCopiedPrompt(false), 2000);
 			}
+			toast.success('Copied to clipboard');
 		} catch (err) {
 			console.error('Copy failed', err);
+			toast.error('Failed to copy to clipboard');
 		}
 	};
 
@@ -322,10 +335,13 @@ export default function EditPostPage() {
 			);
 
 			if (response.success) {
-				router.push('/dashboard/posts');
+				toast.success(response.message || 'Post updated successfully');
+			} else {
+				toast.error(response.error || 'Failed to update post');
 			}
 		} catch (error) {
 			console.error('Failed to save post:', error);
+			toast.error('An unexpected error occurred while saving the post');
 		} finally {
 			setIsSaving(false);
 		}
@@ -342,13 +358,15 @@ export default function EditPostPage() {
 			);
 			if (!response.success) {
 				console.error('Markdown export failed', response.error);
+				toast.error(response.error || 'Failed to export markdown');
 			} else {
-				alert(
+				toast.success(
 					'Markdown export triggered – check the content folder once it completes.'
 				);
 			}
 		} catch (error) {
 			console.error('Failed to export markdown:', error);
+			toast.error('An unexpected error occurred');
 		} finally {
 			setIsExporting(false);
 		}
@@ -365,10 +383,16 @@ export default function EditPostPage() {
 		try {
 			const response = await postService.deletePost(post.id);
 			if (response.success) {
-				router.push('/dashboard/posts');
+				toast.success('Post deleted successfully');
+				setTimeout(() => {
+					router.push('/dashboard/posts');
+				}, 1000);
+			} else {
+				toast.error(response.error || 'Failed to delete post');
 			}
 		} catch (error) {
 			console.error('Failed to delete post:', error);
+			toast.error('An unexpected error occurred');
 		} finally {
 			setIsDeleting(false);
 		}

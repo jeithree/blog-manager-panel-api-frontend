@@ -1,6 +1,7 @@
 'use client';
 
 import React, {useState, useEffect, useCallback, useMemo} from 'react';
+import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -122,10 +123,13 @@ export default function CategoriesTagsPage() {
 				setNewCategoryName('');
 				setNewCategorySlug('');
 				setNewCategoryDescription('');
+				toast.success('Category created successfully');
+			} else {
+				toast.error(response.error?.message || 'Failed to create category');
 			}
 		} catch (error) {
 			console.error('Failed to create category:', error);
-			alert('Failed to create category');
+			toast.error('An unexpected error occurred');
 		} finally {
 			setIsCreatingCategory(false);
 		}
@@ -147,10 +151,13 @@ export default function CategoriesTagsPage() {
 				setShowTagDialog(false);
 				setNewTagName('');
 				setNewTagSlug('');
+				toast.success('Tag created successfully');
+			} else {
+				toast.error(response.error?.message || 'Failed to create tag');
 			}
 		} catch (error) {
 			console.error('Failed to create tag:', error);
-			alert('Failed to create tag');
+			toast.error('An unexpected error occurred');
 		} finally {
 			setIsCreatingTag(false);
 		}

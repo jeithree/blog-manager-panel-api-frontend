@@ -1,6 +1,7 @@
 'use client';
 
 import React, {useEffect, useState, useCallback, useMemo} from 'react';
+import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -103,9 +104,13 @@ export default function AuthorsPage() {
 				setSlug('');
 				setBio('');
 				setAvatar('');
+				toast.success('Author created successfully');
+			} else {
+				toast.error(res.error?.message || 'Failed to create author');
 			}
 		} catch (error) {
 			console.error('Failed to create author', error);
+			toast.error('An unexpected error occurred');
 		} finally {
 			setIsLoading(false);
 		}
