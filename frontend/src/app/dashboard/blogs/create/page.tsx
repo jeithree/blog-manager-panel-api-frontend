@@ -123,6 +123,20 @@ export default function CreateBlogPage() {
 						</div>
 
 						<div className="space-y-2">
+							<Label htmlFor="R2AccountId">R2 Account ID *</Label>
+							<Input
+								id="R2AccountId"
+								value={formData.R2AccountId}
+								onChange={(e) => handleChange('R2AccountId', e.target.value)}
+								required
+								placeholder="your-r2-account-id"
+							/>
+							<p className="text-xs text-muted-foreground">
+								Cloudflare account ID
+							</p>
+						</div>
+
+						<div className="space-y-2">
 							<Label htmlFor="R2AccessKeyId">R2 Access Key ID *</Label>
 							<Input
 								id="R2AccessKeyId"
@@ -150,20 +164,6 @@ export default function CreateBlogPage() {
 							/>
 							<p className="text-xs text-muted-foreground">
 								Cloudflare R2 secret access key
-							</p>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="R2AccountId">R2 Account ID *</Label>
-							<Input
-								id="R2AccountId"
-								value={formData.R2AccountId}
-								onChange={(e) => handleChange('R2AccountId', e.target.value)}
-								required
-								placeholder="your-r2-account-id"
-							/>
-							<p className="text-xs text-muted-foreground">
-								Cloudflare account ID
 							</p>
 						</div>
 

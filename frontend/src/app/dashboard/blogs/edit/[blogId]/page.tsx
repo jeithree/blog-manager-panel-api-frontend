@@ -226,10 +226,21 @@ export default function EditBlogPage() {
 							<Label htmlFor="netlifyToken">Netlify Token</Label>
 							<Input
 								id="netlifyToken"
-                                type="password"
+								type="password"
 								value={formData.netlifyToken}
 								onChange={(e) => handleChange('netlifyToken', e.target.value)}
 								placeholder="your-netlify-token"
+								disabled={!isOwner}
+							/>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="R2AccountId">R2 Account ID</Label>
+							<Input
+								id="R2AccountId"
+								value={formData.R2AccountId}
+								onChange={(e) => handleChange('R2AccountId', e.target.value)}
+								placeholder="your-r2-account-id"
 								disabled={!isOwner}
 							/>
 						</div>
@@ -255,17 +266,6 @@ export default function EditBlogPage() {
 									handleChange('R2SecretAccessKey', e.target.value)
 								}
 								placeholder="your-r2-secret-access-key"
-								disabled={!isOwner}
-							/>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="R2AccountId">R2 Account ID</Label>
-							<Input
-								id="R2AccountId"
-								value={formData.R2AccountId}
-								onChange={(e) => handleChange('R2AccountId', e.target.value)}
-								placeholder="your-r2-account-id"
 								disabled={!isOwner}
 							/>
 						</div>

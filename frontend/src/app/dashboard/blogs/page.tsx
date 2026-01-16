@@ -134,6 +134,14 @@ export default function BlogsPage() {
 													{blog.netlifyToken ? '••••••••••••' : 'Not set'}
 												</p>
 											</div>
+                                            <div>
+												<p className="text-xs font-medium text-muted-foreground">
+													R2 Account ID
+												</p>
+												<p className="text-xs truncate">
+													{blog.R2AccountId || 'Not set'}
+												</p>
+											</div>
 											<div>
 												<p className="text-xs font-medium text-muted-foreground">
 													R2 Access Key ID
@@ -148,14 +156,6 @@ export default function BlogsPage() {
 												</p>
 												<p className="text-xs truncate">
 													{blog.R2SecretAccessKey ? '••••••••••••' : 'Not set'}
-												</p>
-											</div>
-											<div>
-												<p className="text-xs font-medium text-muted-foreground">
-													R2 Account ID
-												</p>
-												<p className="text-xs truncate">
-													{blog.R2AccountId || 'Not set'}
 												</p>
 											</div>
 											<div>
