@@ -128,7 +128,39 @@ export default function BlogsPage() {
 											</div>
 											<div>
 												<p className="text-xs font-medium text-muted-foreground">
-													R2 Bucket
+													Netlify Token
+												</p>
+												<p className="text-xs truncate">
+													{blog.netlifyToken ? '••••••••••••' : 'Not set'}
+												</p>
+											</div>
+											<div>
+												<p className="text-xs font-medium text-muted-foreground">
+													R2 Access Key ID
+												</p>
+												<p className="text-xs truncate">
+													{blog.R2AccessKeyId || 'Not set'}
+												</p>
+											</div>
+											<div>
+												<p className="text-xs font-medium text-muted-foreground">
+													R2 Secret Access Key
+												</p>
+												<p className="text-xs truncate">
+													{blog.R2SecretAccessKey ? '••••••••••••' : 'Not set'}
+												</p>
+											</div>
+											<div>
+												<p className="text-xs font-medium text-muted-foreground">
+													R2 Account ID
+												</p>
+												<p className="text-xs truncate">
+													{blog.R2AccountId || 'Not set'}
+												</p>
+											</div>
+											<div>
+												<p className="text-xs font-medium text-muted-foreground">
+													R2 Bucket Name
 												</p>
 												<p className="text-xs truncate">{blog.R2BucketName}</p>
 											</div>
@@ -138,6 +170,14 @@ export default function BlogsPage() {
 												</p>
 												<p className="text-xs truncate">
 													{blog.R2CustomDomain}
+												</p>
+											</div>
+											<div>
+												<p className="text-xs font-medium text-muted-foreground">
+													OpenAI API Key
+												</p>
+												<p className="text-xs truncate">
+													{blog.openAIApiKey ? '••••••••••••' : 'Not set'}
 												</p>
 											</div>
 										</div>

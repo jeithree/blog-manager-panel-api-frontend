@@ -8,7 +8,6 @@ import type {
 	GeneratePostEditDto,
 } from '../types/creator.ts';
 import {NotFoundError} from '../lib/appError.ts';
-import {OPENAI_API_KEY} from '../configs/basics.ts';
 
 const getPromptTemplate = async (
 	type:
@@ -144,7 +143,7 @@ export const generateTitleSuggestions = async (
 		),
 	});
 
-	const client = new OpenAI({apiKey: OPENAI_API_KEY});
+	const client = new OpenAI({apiKey: blog.openAIApiKey});
 	const response = await client.responses.parse({
 		model: 'gpt-5-mini',
 		input: [{role: 'user', content: promptTemplate}],
@@ -267,7 +266,7 @@ export const generatePostContent = async (
 		tags: z.array(z.string()),
 	});
 
-	const client = new OpenAI({apiKey: OPENAI_API_KEY});
+	const client = new OpenAI({apiKey: blog.openAIApiKey});
 	const response = await client.responses.parse({
 		model: 'gpt-5-mini',
 		input: [{role: 'user', content: promptTemplate}],
@@ -294,6 +293,15 @@ export const generatePostContent = async (
 };
 
 export const generateImagePrompt = async (blogPost: string, blogId: string) => {
+	const blog = await prisma.blog.findUnique({
+		where: {id: blogId},
+	});
+
+	if (!blog) {
+		throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+	}
+
+	// Prepare prompt
 	let promptTemplate = await getPromptTemplate('image-prompt-creation', blogId);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
@@ -308,7 +316,7 @@ export const generateImagePrompt = async (blogPost: string, blogId: string) => {
 		prompt: z.string(),
 	});
 
-	const client = new OpenAI({apiKey: OPENAI_API_KEY});
+	const client = new OpenAI({apiKey: blog.openAIApiKey});
 	const response = await client.responses.parse({
 		model: 'gpt-5-mini',
 		input: [{role: 'user', content: promptTemplate}],
@@ -337,7 +345,7 @@ export const generatePostEdit = async (
 		include: {
 			category: true,
 			tags: true,
-			blog: {select: {id: true, userId: true, title: true}},
+			blog: {select: {id: true, userId: true, title: true, openAIApiKey: true}},
 		},
 	});
 
@@ -375,7 +383,7 @@ export const generatePostEdit = async (
 		content: z.string(),
 	});
 
-	const client = new OpenAI({apiKey: OPENAI_API_KEY});
+	const client = new OpenAI({apiKey: post.blog.openAIApiKey});
 	const response = await client.responses.parse({
 		model: 'gpt-5-mini',
 		input: [{role: 'user', content: promptTemplate}],

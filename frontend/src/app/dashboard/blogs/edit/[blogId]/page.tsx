@@ -25,8 +25,13 @@ export default function EditBlogPage() {
 		domain: '',
 		description: '',
 		netlifySiteId: '',
+		netlifyToken: '',
+		R2AccessKeyId: '',
+		R2SecretAccessKey: '',
+		R2AccountId: '',
 		R2BucketName: '',
 		R2CustomDomain: '',
+		openAIApiKey: '',
 	});
 
 	// Members
@@ -61,12 +66,17 @@ export default function EditBlogPage() {
 				const blogData = response.data;
 				setBlog(blogData);
 				setFormData({
-					title: blogData.title,
-					domain: blogData.domain,
-					description: blogData.description,
-					netlifySiteId: blogData.netlifySiteId,
-					R2BucketName: blogData.R2BucketName,
-					R2CustomDomain: blogData.R2CustomDomain,
+					title: blogData.title ?? '',
+					domain: blogData.domain ?? '',
+					description: blogData.description ?? '',
+					netlifySiteId: blogData.netlifySiteId ?? '',
+					netlifyToken: blogData.netlifyToken ?? '',
+					R2AccessKeyId: blogData.R2AccessKeyId ?? '',
+					R2SecretAccessKey: blogData.R2SecretAccessKey ?? '',
+					R2AccountId: blogData.R2AccountId ?? '',
+					R2BucketName: blogData.R2BucketName ?? '',
+					R2CustomDomain: blogData.R2CustomDomain ?? '',
+					openAIApiKey: blogData.openAIApiKey ?? '',
 				});
 			}
 		} catch (error) {
@@ -213,6 +223,54 @@ export default function EditBlogPage() {
 						</div>
 
 						<div className="space-y-2">
+							<Label htmlFor="netlifyToken">Netlify Token</Label>
+							<Input
+								id="netlifyToken"
+                                type="password"
+								value={formData.netlifyToken}
+								onChange={(e) => handleChange('netlifyToken', e.target.value)}
+								placeholder="your-netlify-token"
+								disabled={!isOwner}
+							/>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="R2AccessKeyId">R2 Access Key ID</Label>
+							<Input
+								id="R2AccessKeyId"
+								value={formData.R2AccessKeyId}
+								onChange={(e) => handleChange('R2AccessKeyId', e.target.value)}
+								placeholder="your-r2-access-key-id"
+								disabled={!isOwner}
+							/>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="R2SecretAccessKey">R2 Secret Access Key</Label>
+							<Input
+								id="R2SecretAccessKey"
+								type="password"
+								value={formData.R2SecretAccessKey}
+								onChange={(e) =>
+									handleChange('R2SecretAccessKey', e.target.value)
+								}
+								placeholder="your-r2-secret-access-key"
+								disabled={!isOwner}
+							/>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="R2AccountId">R2 Account ID</Label>
+							<Input
+								id="R2AccountId"
+								value={formData.R2AccountId}
+								onChange={(e) => handleChange('R2AccountId', e.target.value)}
+								placeholder="your-r2-account-id"
+								disabled={!isOwner}
+							/>
+						</div>
+
+						<div className="space-y-2">
 							<Label htmlFor="R2BucketName">R2 Bucket Name</Label>
 							<Input
 								id="R2BucketName"
@@ -231,6 +289,18 @@ export default function EditBlogPage() {
 								value={formData.R2CustomDomain}
 								onChange={(e) => handleChange('R2CustomDomain', e.target.value)}
 								placeholder="https://cdn.myawesomeblog.com"
+								disabled={!isOwner}
+							/>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="openAIApiKey">OpenAI API Key</Label>
+							<Input
+								id="openAIApiKey"
+								type="password"
+								value={formData.openAIApiKey}
+								onChange={(e) => handleChange('openAIApiKey', e.target.value)}
+								placeholder="sk-..."
 								disabled={!isOwner}
 							/>
 						</div>

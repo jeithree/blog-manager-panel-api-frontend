@@ -59,36 +59,10 @@ export const REDIS_HOST = process.env.REDIS_HOST;
 export const REDIS_PORT = Number(process.env.REDIS_PORT);
 export const REDIS_URL = `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
 
-if (!process.env.OPENAI_API_KEY) {
-	throw new Error('OPENAI_API_KEY is not defined in environment variables');
-}
-export const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-if (!process.env.NETLIFY_TOKEN) {
-	throw new Error('NETLIFY_TOKEN is not defined in environment variables');
-}
-export const NETLIFY_TOKEN = process.env.NETLIFY_TOKEN;
-
 if (!process.env.DATABASE_URL) {
 	throw new Error('DATABASE_URL is not defined in environment variables');
 }
 export const DATABASE_URL = process.env.DATABASE_URL;
-
-// R2 cloudflare
-if (!process.env.R2_ACCESS_KEY_ID) {
-	throw new Error('R2_ACCESS_KEY_ID is not defined in environment variables');
-}
-if (!process.env.R2_SECRET_ACCESS_KEY) {
-	throw new Error(
-		'R2_SECRET_ACCESS_KEY is not defined in environment variables'
-	);
-}
-if (!process.env.R2_ACCOUNT_ID) {
-	throw new Error('R2_ACCOUNT_ID is not defined in environment variables');
-}
-export const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
-export const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
-export const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
 
 export const PROCESS_POST_CREATION_JOB_NAME = 'process-post-creation-job';
 export const POSTS_CREATION_QUEUE_NAME = 'post-creation-queue';

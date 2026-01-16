@@ -4,25 +4,23 @@ import {
 	DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import sharp from 'sharp';
-import {
-	R2_ACCESS_KEY_ID,
-	R2_SECRET_ACCESS_KEY,
-	R2_ACCOUNT_ID,
-} from '../configs/basics.ts';
 import {InternalServerError} from '../lib/appError.ts';
 import * as Logger from '../helpers/logger.ts';
 
 export const uploadImageToR2 = async (
+    accountId: string,
+    accessKeyId: string,
+    secretAccessKey: string,
 	bucketName: string,
 	buffer: Buffer,
 	key: string
 ): Promise<string> => {
 	const client = new S3Client({
 		region: 'auto',
-		endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+		endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
 		credentials: {
-			accessKeyId: R2_ACCESS_KEY_ID,
-			secretAccessKey: R2_SECRET_ACCESS_KEY,
+			accessKeyId: accessKeyId,
+			secretAccessKey: secretAccessKey,
 		},
 	});
 
@@ -49,15 +47,18 @@ export const uploadImageToR2 = async (
 };
 
 export const deleteImageFromR2 = async (
+    accountId: string,
+    accessKeyId: string,
+    secretAccessKey: string,
 	bucketName: string,
 	key: string
 ): Promise<void> => {
 	const client = new S3Client({
 		region: 'auto',
-		endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+		endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
 		credentials: {
-			accessKeyId: R2_ACCESS_KEY_ID,
-			secretAccessKey: R2_SECRET_ACCESS_KEY,
+			accessKeyId: accessKeyId,
+			secretAccessKey: secretAccessKey,
 		},
 	});
 

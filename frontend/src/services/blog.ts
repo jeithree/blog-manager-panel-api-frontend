@@ -7,10 +7,15 @@ export type Blog = {
 	title: string;
 	domain: string;
 	description: string;
+    netlifyToken: string;
 	netlifySiteId: string;
-	apiKey: string;
+	R2AccessKeyId: string;
+    R2SecretAccessKey: string;
+    R2AccountId: string;
 	R2BucketName: string;
 	R2CustomDomain: string;
+    openAIApiKey: string;
+    apiKey: string;
 	createdAt: string;
 	updatedAt: string;
 };
@@ -19,18 +24,28 @@ export type CreateBlogData = {
 	title: string;
 	domain: string;
 	description: string;
+    netlifyToken: string;
 	netlifySiteId: string;
+    R2AccessKeyId: string;
+    R2SecretAccessKey: string;
+    R2AccountId: string;
 	R2BucketName: string;
 	R2CustomDomain: string;
+    openAIApiKey: string;
 };
 
 export type UpdateBlogData = {
 	title?: string;
 	domain?: string;
 	description?: string;
+    netlifyToken?: string;
 	netlifySiteId?: string;
+    R2AccessKeyId?: string;
+    R2SecretAccessKey?: string;
+    R2AccountId?: string;
 	R2BucketName?: string;
 	R2CustomDomain?: string;
+    openAIApiKey?: string;
 };
 
 export const blogService = {

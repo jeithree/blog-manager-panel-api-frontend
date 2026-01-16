@@ -158,32 +158,31 @@ cp .env.example .env.local
 Edit `api/.env.local` with your configuration:
 
 ```env
+# Server
+PORT=5000
+NODE_ENV=development
+TIME_ZONE="America/New_York"
+SITE_URL="http://localhost:3000"
+API_URL="http://localhost:5000"
+
+# Initial admin credentials (used on first run to create admin user)
+ADMIN_USERNAME="admin"
+ADMIN_EMAIL="admin@example.com"
+ADMIN_PASSWORD="YourSecurePassword123!"
+
+# Session
+SESSION_SECRET="your-secure-session-secret-here-min-32-chars"
+SESSION_REDIS_PREFIX="authsess:"
+
 # Database
 DATABASE_URL="mysql://user:password@localhost:3306/blog_manager"
 
 # Redis
 REDIS_HOST=localhost
 REDIS_PORT=6379
-
-# Session
-SESSION_SECRET=your-secure-session-secret-here
-
-# Server
-PORT=5000
-NODE_ENV=development
-
-# Cloudflare R2 (optional)
-R2_ACCOUNT_ID=your-r2-account-id
-R2_ACCESS_KEY_ID=your-r2-access-key
-R2_SECRET_ACCESS_KEY=your-r2-secret-key
-R2_BUCKET_NAME=your-bucket-name
-
-# OpenAI (optional)
-OPENAI_API_KEY=your-openai-api-key
-
-# Netlify (optional)
-NETLIFY_API_TOKEN=your-netlify-token
 ```
+
+**Note**: On first run, the system will automatically create an initial admin user using the `ADMIN_USERNAME`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` from your environment variables. Make sure to change these credentials after your first login.
 
 Create `.env.local` file in the `frontend` directory:
 
@@ -419,20 +418,21 @@ For detailed API documentation, refer to the route files in [api/src/routes](api
 
 ### API Environment Variables
 
-| Variable               | Description                   | Required | Default       |
-| ---------------------- | ----------------------------- | -------- | ------------- |
-| `DATABASE_URL`         | MariaDB connection string     | Yes      | -             |
-| `REDIS_HOST`           | Redis server host             | Yes      | `localhost`   |
-| `REDIS_PORT`           | Redis server port             | Yes      | `6379`        |
-| `SESSION_SECRET`       | Secret for session encryption | Yes      | -             |
-| `PORT`                 | API server port               | No       | `5000`        |
-| `NODE_ENV`             | Environment mode              | No       | `development` |
-| `R2_ACCOUNT_ID`        | Cloudflare R2 account ID      | No       | -             |
-| `R2_ACCESS_KEY_ID`     | Cloudflare R2 access key      | No       | -             |
-| `R2_SECRET_ACCESS_KEY` | Cloudflare R2 secret key      | No       | -             |
-| `R2_BUCKET_NAME`       | Cloudflare R2 bucket name     | No       | -             |
-| `OPENAI_API_KEY`       | OpenAI API key                | No       | -             |
-| `NETLIFY_API_TOKEN`    | Netlify API token             | No       | -             |
+| Variable               | Description                                   | Required | Default        |
+| ---------------------- | --------------------------------------------- | -------- | -------------- |
+| `DATABASE_URL`         | MariaDB connection string                     | Yes      | -              |
+| `REDIS_HOST`           | Redis server host                             | Yes      | `localhost`    |
+| `REDIS_PORT`           | Redis server port                             | Yes      | `6379`         |
+| `SESSION_SECRET`       | Secret for session encryption (min 32 chars)  | Yes      | -              |
+| `SESSION_REDIS_PREFIX` | Prefix for Redis session keys                 | Yes      | `sess:`        |
+| `ADMIN_USERNAME`       | Initial admin username (created on first run) | Yes      | -              |
+| `ADMIN_EMAIL`          | Initial admin email (created on first run)    | Yes      | -              |
+| `ADMIN_PASSWORD`       | Initial admin password (created on first run) | Yes      | -              |
+| `PORT`                 | API server port                               | Yes      | `5000`         |
+| `NODE_ENV`             | Environment mode                              | Yes      | `development`  |
+| `TIME_ZONE`            | Server timezone (IANA format)                 | Yes      | `America/Lima` |
+| `SITE_URL`             | Frontend URL                                  | Yes      | -              |
+| `API_URL`              | Backend API URL (for production)              | Yes      | -              |
 
 ### Frontend Environment Variables
 
@@ -440,21 +440,9 @@ For detailed API documentation, refer to the route files in [api/src/routes](api
 | --------------------- | --------------- | -------- | ----------------------- |
 | `NEXT_PUBLIC_API_URL` | Backend API URL | Yes      | `http://localhost:5000` |
 
-## ⚠️ Important Notes & Limitations
-
-### Netlify Integration Requirement
+## ⚠️ Netlify Integration Requirement
 
 Each blog in the system requires a Netlify site ID (`netlifySiteId`) for deployment and hosting. You must have a Netlify site set up before creating a blog in this system.
-
-### Multi-Tenancy Considerations
-
-The current implementation uses **global configuration** for third-party services rather than per-blog configuration. The following environment variables are shared across all blogs:
-
-- `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`
-- `OPENAI_API_KEY`
-- `NETLIFY_API_TOKEN`
-
-**Note**: This approach is not ideal for true multi-tenancy. Future improvements will include moving these credentials to the Prisma schema to enable per-blog configuration, allowing different blogs to use different storage buckets, AI accounts, and deployment targets, but as per now, im the only one using this so im keeping like this.
 
 ## 📝 License
 
