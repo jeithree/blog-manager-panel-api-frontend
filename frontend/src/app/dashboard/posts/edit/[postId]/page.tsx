@@ -170,6 +170,9 @@ export default function EditPostPage() {
 
 			if (response.success && response.data) {
 				setContent(response.data.content);
+				// Set AI review issues
+				setAiReviewIssues(response.data.AIPostReviewIssues || '');
+
 				setShowEditDialog(false);
 				setEditRequest('');
 			}
@@ -344,6 +347,9 @@ export default function EditPostPage() {
 
 			if (response.success) {
 				toast.success(response.message || 'Post updated successfully');
+				setTimeout(() => {
+					router.push('/dashboard/posts');
+				}, 500);
 			} else {
 				toast.error(response.error || 'Failed to update post');
 			}

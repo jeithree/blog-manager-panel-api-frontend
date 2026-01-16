@@ -447,7 +447,7 @@ export default function CreatePostPage() {
 				toast.success('Post created successfully');
 				setTimeout(() => {
 					router.push('/dashboard/posts');
-				}, 500);
+				}, 1500);
 			} else {
 				toast.error(response.error || 'Failed to create post');
 			}

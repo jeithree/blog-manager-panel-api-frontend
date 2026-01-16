@@ -20,7 +20,7 @@ export const generatePostEditSchema = z.object({
 	changeRequest: z
 		.string()
 		.min(1, 'Change request is required')
-		.max(1000, 'Change request must be at most 1000 characters'),
+		.max(2000, 'Change request must be at most 1000 characters'),
 });
 export type GeneratePostEditDto = z.infer<typeof generatePostEditSchema>;
 
