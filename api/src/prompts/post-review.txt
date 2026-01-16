@@ -24,7 +24,7 @@ Review the blog post description and content generated based on the title and gu
 - Keep anchor text descriptive and concise; avoid raw URLs or reference-style links.
 
 # Internal Linking Rules:
-- Use 1–3 internal links total from the published posts list.
+- Use 1–3 internal links total.
 - Select only the most relevant posts; if fewer than 1–3 fit naturally, include fewer.
 - CRITICAL: Never repeat the same link twice in the post. Each URL can only appear once.
 - CRITICAL: Do not mention other posts or reference them without linking. If you reference a post topic, either link it (if available) or don't mention it at all.

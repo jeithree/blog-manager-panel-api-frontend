@@ -447,7 +447,7 @@ export default function CreatePostPage() {
 				toast.success('Post created successfully');
 				setTimeout(() => {
 					router.push('/dashboard/posts');
-				}, 1500);
+				}, 500);
 			} else {
 				toast.error(response.error || 'Failed to create post');
 			}
@@ -651,13 +651,24 @@ export default function CreatePostPage() {
 										<span>⚠️</span>
 										AI Review Issues
 									</h3>
-									<Button
-										size="sm"
-										variant="outline"
-										onClick={reviewContent}
-										disabled={isReviewing || !content || !getSelectedTitle()}>
-										{isReviewing ? 'Reviewing...' : 'Review Again'}
-									</Button>
+									<div className="flex gap-2">
+										<Button
+											size="sm"
+											variant="outline"
+											onClick={reviewContent}
+											disabled={isReviewing || !content || !getSelectedTitle()}>
+											{isReviewing ? 'Reviewing...' : 'Review Again'}
+										</Button>
+										<Button
+											size="sm"
+											variant="default"
+											onClick={() => {
+												setAiReviewIssues('');
+												toast.success('Marked as fixed');
+											}}>
+											Mark as Fixed
+										</Button>
+									</div>
 								</div>
 								<p className="text-sm text-yellow-800 mb-3">
 									The AI has identified the following issues with the generated

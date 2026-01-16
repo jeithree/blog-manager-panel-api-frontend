@@ -394,7 +394,7 @@ export default function EditPostPage() {
 				toast.success('Post deleted successfully');
 				setTimeout(() => {
 					router.push('/dashboard/posts');
-				}, 1000);
+				}, 500);
 			} else {
 				toast.error(response.error || 'Failed to delete post');
 			}
@@ -546,13 +546,26 @@ export default function EditPostPage() {
 								)}
 								AI Review Issues
 							</CardTitle>
-							<Button
-								size="sm"
-								variant="outline"
-								onClick={reviewContent}
-								disabled={isReviewing || !content || !title}>
-								{isReviewing ? 'Reviewing...' : 'Review Again'}
-							</Button>
+							<div className="flex gap-2">
+								<Button
+									size="sm"
+									variant="outline"
+									onClick={reviewContent}
+									disabled={isReviewing || !content || !title}>
+									{isReviewing ? 'Reviewing...' : 'Review Again'}
+								</Button>
+								{aiReviewIssues && (
+									<Button
+										size="sm"
+										variant="default"
+										onClick={() => {
+											setAiReviewIssues('');
+											toast.success('Marked as fixed');
+										}}>
+										Mark as Fixed
+									</Button>
+								)}
+							</div>
 						</div>
 					</CardHeader>
 					<CardContent>

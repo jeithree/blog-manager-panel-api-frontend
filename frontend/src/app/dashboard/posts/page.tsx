@@ -347,7 +347,7 @@ export default function PostsPage() {
 													<Badge
 														variant="outline"
 														className="bg-yellow-50 text-yellow-700 border-yellow-300">
-														has issues
+														has suggestions
 													</Badge>
 												)}
 												<Badge variant={getStatusBadgeVariant(post.status)}>
