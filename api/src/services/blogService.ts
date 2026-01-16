@@ -31,7 +31,12 @@ export const createBlog = async (userId: string, blogData: CreateBlogDto) => {
 	await RedisCache.deleteByPattern(`public:categories:${newBlog.id}*`);
 	await RedisCache.deleteByPattern(`public:tags:${newBlog.id}*`);
 
-	return newBlog;
+	return {
+		...newBlog,
+		netlifyToken: newBlog.netlifyToken ? '••••••••••••' : null,
+		R2SecretAccessKey: newBlog.R2SecretAccessKey ? '••••••••••••' : null,
+		openAIApiKey: newBlog.openAIApiKey ? '••••••••••••' : null,
+	};
 };
 
 export const updateBlog = async (
@@ -64,7 +69,12 @@ export const updateBlog = async (
 	await RedisCache.deleteByPattern(`public:categories:${blogId}*`);
 	await RedisCache.deleteByPattern(`public:tags:${blogId}*`);
 
-	return updatedBlog;
+	return {
+		...updatedBlog,
+		netlifyToken: updatedBlog.netlifyToken ? '••••••••••••' : null,
+		R2SecretAccessKey: updatedBlog.R2SecretAccessKey ? '••••••••••••' : null,
+		openAIApiKey: updatedBlog.openAIApiKey ? '••••••••••••' : null,
+	};
 };
 
 export const getBlogs = async (userId: string) => {
@@ -72,25 +82,17 @@ export const getBlogs = async (userId: string) => {
 		where: {
 			OR: [{userId}, {members: {some: {userId}}}],
 		},
-		select: {
-			id: true,
-			userId: true,
-			title: true,
-			domain: true,
-			description: true,
-			netlifySiteId: true,
-            apiKey: true,
-			R2BucketName: true,
-			R2CustomDomain: true,
-			createdAt: true,
-			updatedAt: true,
-		},
 		orderBy: {
 			createdAt: 'desc',
 		},
 	});
 
-	return blogs;
+	return blogs.map((blog) => ({
+		...blog,
+		netlifyToken: blog.netlifyToken ? '••••••••••••' : null,
+		R2SecretAccessKey: blog.R2SecretAccessKey ? '••••••••••••' : null,
+		openAIApiKey: blog.openAIApiKey ? '••••••••••••' : null,
+	}));
 };
 
 export const getBlog = async (userId: string, blogId?: string) => {
@@ -114,7 +116,12 @@ export const getBlog = async (userId: string, blogId?: string) => {
 		throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
 	}
 
-	return blog;
+	return {
+		...blog,
+		netlifyToken: blog.netlifyToken ? '••••••••••••' : null,
+		R2SecretAccessKey: blog.R2SecretAccessKey ? '••••••••••••' : null,
+		openAIApiKey: blog.openAIApiKey ? '••••••••••••' : null,
+	};
 };
 
 // Public Service

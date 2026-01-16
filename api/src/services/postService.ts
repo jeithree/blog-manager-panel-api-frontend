@@ -63,6 +63,9 @@ export const createPost = async (
 	let imageUrl = null;
 	if (postData.imageUrl && file) {
 		imageUrl = await R2Service.uploadImageToR2(
+			blog.R2AccountId,
+			blog.R2AccessKeyId,
+			blog.R2SecretAccessKey,
 			blog.R2BucketName,
 			file.buffer,
 			`blog/images/${postData.imageUrl}`
@@ -105,8 +108,11 @@ export const createPost = async (
 	if (willPublish && blog.netlifySiteId) {
 		if (!IS_DEV_MODE) {
 			try {
-				const deploy = await netlifyService.triggerRebuild(blog.netlifySiteId);
-				await netlifyService.waitForDeploy(deploy.id);
+				const deploy = await netlifyService.triggerRebuild(
+					blog.netlifySiteId,
+					blog.netlifyToken
+				);
+				await netlifyService.waitForDeploy(deploy.id, blog.netlifyToken);
 				Logger.log(
 					`Post publish triggered Netlify deploy (site: ${blog.netlifySiteId}, deploy: ${deploy.id})`,
 					'info'
@@ -142,14 +148,6 @@ export const updatePost = async (
 		where: {
 			id: blogId,
 			// owner check was here; replaced by membership resolution below
-		},
-		select: {
-			id: true,
-			userId: true,
-			title: true,
-			netlifySiteId: true,
-			R2BucketName: true,
-			R2CustomDomain: true,
 		},
 	});
 
@@ -275,6 +273,9 @@ export const updatePost = async (
 	let imageUrl = null;
 	if (fields.imageUrl && file) {
 		imageUrl = await R2Service.uploadImageToR2(
+			blog.R2AccountId,
+			blog.R2AccessKeyId,
+			blog.R2SecretAccessKey,
 			blog.R2BucketName,
 			file.buffer,
 			`blog/images/${fields.imageUrl}`
@@ -284,6 +285,9 @@ export const updatePost = async (
 			// delete old image from R2
 			if (post.imageUrl && post.imageUrl != imageUrl) {
 				await R2Service.deleteImageFromR2(
+					blog.R2AccountId,
+					blog.R2AccessKeyId,
+					blog.R2SecretAccessKey,
 					blog.R2BucketName,
 					post.imageUrl.replace(`${blog.R2CustomDomain}/`, '')
 				);
@@ -334,11 +338,14 @@ export const updatePost = async (
 		// Only owners can publish
 		throw new ForbiddenError('Only the blog owner can publish posts');
 	}
-	if (willPublish && blog.netlifySiteId) {
+	if (willPublish) {
 		if (!IS_DEV_MODE) {
 			try {
-				const deploy = await netlifyService.triggerRebuild(blog.netlifySiteId);
-				await netlifyService.waitForDeploy(deploy.id);
+				const deploy = await netlifyService.triggerRebuild(
+					blog.netlifySiteId,
+					blog.netlifyToken
+				);
+				await netlifyService.waitForDeploy(deploy.id, blog.netlifyToken);
 				Logger.log(
 					`Post publish triggered Netlify deploy (site: ${blog.netlifySiteId}, deploy: ${deploy.id})`,
 					'info'
@@ -374,7 +381,6 @@ export const deletePost = async (userId: string, postId: string) => {
 
 	const blog = await prisma.blog.findFirst({
 		where: {id: post.blogId, userId},
-		select: {id: true, R2BucketName: true, R2CustomDomain: true},
 	});
 
 	if (!blog) {
@@ -384,6 +390,9 @@ export const deletePost = async (userId: string, postId: string) => {
 	// also delete image from R2
 	if (post.imageUrl) {
 		await R2Service.deleteImageFromR2(
+			blog.R2AccountId,
+			blog.R2AccessKeyId,
+			blog.R2SecretAccessKey,
 			blog.R2BucketName,
 			post.imageUrl.replace(`${blog.R2CustomDomain}/`, '')
 		);

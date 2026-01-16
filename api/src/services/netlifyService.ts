@@ -1,14 +1,13 @@
-import {NETLIFY_TOKEN} from '../configs/basics.ts';
 import {sleep} from '../helpers/helpers.ts';
 
-export const triggerRebuild = async (netlifySiteId: string) => {
+export const triggerRebuild = async (netlifySiteId: string, netlifyToken: string) => {
 	// POST /sites/:site_id/builds triggers a new build for a git-connected site.
 	const res = await fetch(
 		`https://api.netlify.com/api/v1/sites/${netlifySiteId}/builds`,
 		{
 			method: 'POST',
 			headers: {
-				Authorization: `Bearer ${NETLIFY_TOKEN}`,
+				Authorization: `Bearer ${netlifyToken}`,
 				'Content-Type': 'application/json',
 			},
 		}
@@ -25,12 +24,12 @@ export const triggerRebuild = async (netlifySiteId: string) => {
 	return {id: build.deploy_id};
 };
 
-const getDeployStatus = async (deployId: string) => {
+const getDeployStatus = async (deployId: string, netlifyToken: string) => {
 	const res = await fetch(
 		`https://api.netlify.com/api/v1/deploys/${deployId}`,
 		{
 			headers: {
-				Authorization: `Bearer ${NETLIFY_TOKEN}`,
+				Authorization: `Bearer ${netlifyToken}`,
 			},
 		}
 	);
@@ -39,9 +38,9 @@ const getDeployStatus = async (deployId: string) => {
 	return res.json();
 };
 
-export const waitForDeploy = async (deployId: string) => {
+export const waitForDeploy = async (deployId: string, netlifyToken: string) => {
 	while (true) {
-		const deploy = await getDeployStatus(deployId);
+		const deploy = await getDeployStatus(deployId, netlifyToken);
 
 		if (deploy.state === 'ready') return deploy;
 		if (deploy.state === 'error') throw new Error('Deploy failed');

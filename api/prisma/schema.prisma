@@ -34,8 +34,13 @@ model Blog {
     domain            String    @unique
     description       String
     netlifySiteId     String
+    netlifyToken      String
+    R2AccessKeyId     String
+    R2SecretAccessKey String
+    R2AccountId       String
     R2BucketName      String
     R2CustomDomain    String
+    openAIApiKey      String
     userId            String
     user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
     prompts           Prompt[]

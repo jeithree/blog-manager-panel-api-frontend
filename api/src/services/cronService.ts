@@ -15,14 +15,18 @@ import {getPostsCreationQueue} from '../queue.ts';
 
 const triggerDeployWithRetry = async (
 	netlifySiteId: string,
+	netlifyToken: string,
 	maxAttempts = 3,
 	backoffMs = 10_000
 ) => {
 	let attempt = 1;
 	while (attempt <= maxAttempts) {
 		try {
-			const deploy = await netlifyService.triggerRebuild(netlifySiteId);
-			await netlifyService.waitForDeploy(deploy.id);
+			const deploy = await netlifyService.triggerRebuild(
+				netlifySiteId,
+				netlifyToken
+			);
+			await netlifyService.waitForDeploy(deploy.id, netlifyToken);
 			Logger.log(
 				`Netlify deploy succeeded (site: ${netlifySiteId}, deploy: ${deploy.id})`,
 				'info'
@@ -51,7 +55,7 @@ const publishScheduledPosts = async () => {
 			publishedAt: {lte: now},
 		},
 		include: {
-			blog: {select: {netlifySiteId: true}},
+			blog: {select: {netlifySiteId: true, netlifyToken: true}},
 		},
 	});
 
@@ -80,17 +84,17 @@ const publishScheduledPosts = async () => {
 	);
 
 	if (!IS_DEV_MODE) {
-		const uniqueSiteIds = Array.from(
-			new Set(
-				scheduledPosts
-					.map((post) => post.blog?.netlifySiteId)
-					.filter((id): id is string => Boolean(id))
-			)
-		);
+		// Create a map of unique site ID -> token pairs
+		const uniqueSites = new Map<string, string>();
+		for (const post of scheduledPosts) {
+			if (post.blog.netlifySiteId && post.blog.netlifyToken) {
+				uniqueSites.set(post.blog.netlifySiteId, post.blog.netlifyToken);
+			}
+		}
 
-		for (const siteId of uniqueSiteIds) {
+		for (const [siteId, token] of uniqueSites) {
 			try {
-				await triggerDeployWithRetry(siteId);
+				await triggerDeployWithRetry(siteId, token);
 			} catch (error) {
 				Logger.log(
 					`Failed to deploy site ${siteId} after retries: ${String(error)}`,
