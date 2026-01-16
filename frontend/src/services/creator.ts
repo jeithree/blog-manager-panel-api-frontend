@@ -22,6 +22,7 @@ export type GeneratedContent = {
 	content: string;
 	categoryId: string;
 	tagNames: string[];
+	AIPostReviewIssues: string;
 };
 
 export type GeneratePostEditData = {
@@ -34,11 +35,19 @@ export type GeneratePostEdit = {
 	blogId: string;
 	postId: string;
 	content: string;
+	AIPostReviewIssues: string;
 };
 
 export type GenerateImagePromptData = {
 	blogPost: string;
 	blogId: string;
+};
+
+export type ReviewPostData = {
+	blogId: string;
+	postTitle: string;
+	postDescription?: string;
+	postContent: string;
 };
 
 export const creatorService = {
@@ -75,6 +84,16 @@ export const creatorService = {
 	async generateImagePrompt(data: GenerateImagePromptData) {
 		return apiFetch<{imagePrompt: string}>(
 			`${API_URL}/api/v1/creator/generate-image-prompt`,
+			{
+				method: 'POST',
+				body: JSON.stringify(data),
+			}
+		);
+	},
+
+	async reviewPost(data: ReviewPostData) {
+		return apiFetch<{AIPostReviewIssues: string}>(
+			`${API_URL}/api/v1/creator/review-post`,
 			{
 				method: 'POST',
 				body: JSON.stringify(data),

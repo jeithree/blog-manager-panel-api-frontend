@@ -25,6 +25,7 @@ export type Post = {
 	category?: {id: string; name: string};
 	author?: {id: string; name: string};
 	AIGeneratedImagePrompt?: string;
+    AIPostReviewIssues?: string;
 };
 
 export type CreatePostData = {
@@ -40,6 +41,7 @@ export type CreatePostData = {
 	status: PostStatus;
 	publishedAt?: Date;
 	AIGeneratedImagePrompt?: string;
+    AIPostReviewIssues?: string;
 };
 
 export type UpdatePostData = {
@@ -55,6 +57,7 @@ export type UpdatePostData = {
 	status?: PostStatus;
 	publishedAt?: Date;
 	AIGeneratedImagePrompt?: string;
+    AIPostReviewIssues?: string;
 };
 
 export type GetPostsParams = {

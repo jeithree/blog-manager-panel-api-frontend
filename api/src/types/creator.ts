@@ -29,3 +29,11 @@ export const generateImagePromptSchema = z.object({
 	blogId: z.string().min(1, 'Blog ID is required'),
 });
 export type GenerateImagePromptDto = z.infer<typeof generateImagePromptSchema>;
+
+export const reviewPostSchema = z.object({
+	blogId: z.string().min(1, 'Blog ID is required'),
+	postTitle: z.string().min(1, 'Post title is required'),
+	postDescription: z.string().min(1, 'Post description is required'),
+	postContent: z.string().min(1, 'Post content is required'),
+});
+export type ReviewPostDto = z.infer<typeof reviewPostSchema>;

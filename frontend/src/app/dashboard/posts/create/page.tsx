@@ -62,6 +62,8 @@ export default function CreatePostPage() {
 	const [copiedPrompt, setCopiedPrompt] = useState(false);
 	const [publishDate, setPublishDate] = useState<string>('');
 	const [selectedAuthorId, setSelectedAuthorId] = useState('');
+	const [aiReviewIssues, setAiReviewIssues] = useState('');
+	const [isReviewing, setIsReviewing] = useState(false);
 
 	const loadBlogs = useCallback(async () => {
 		try {
@@ -76,6 +78,29 @@ export default function CreatePostPage() {
 			console.error('Failed to load blogs:', error);
 		}
 	}, [selectedBlogId]);
+
+	const reviewContent = async () => {
+		if (!selectedBlogId || !getSelectedTitle() || !description || !content)
+			return;
+
+		setIsReviewing(true);
+		try {
+			const response = await creatorService.reviewPost({
+				blogId: selectedBlogId,
+				postTitle: getSelectedTitle(),
+				postDescription: description,
+				postContent: content,
+			});
+
+			if (response.success && response.data) {
+				setAiReviewIssues(response.data.AIPostReviewIssues || '');
+			}
+		} catch (error) {
+			console.error('Failed to review content:', error);
+		} finally {
+			setIsReviewing(false);
+		}
+	};
 
 	const loadCategoriesTagsAndAuthors = useCallback(async () => {
 		try {
@@ -187,6 +212,9 @@ export default function CreatePostPage() {
 				setContent(response.data.content);
 				setDescription(response.data.description);
 				setGeneratedTags(response.data.tagNames || []);
+
+				// Set AI review issues
+				setAiReviewIssues(response.data.AIPostReviewIssues || '');
 			}
 		} catch (error) {
 			console.error('Failed to generate content:', error);
@@ -370,6 +398,7 @@ export default function CreatePostPage() {
 			if (selectedTagIds && selectedTagIds.length > 0)
 				postData.tagIds = selectedTagIds;
 			if (imagePrompt) postData.AIGeneratedImagePrompt = imagePrompt;
+			if (aiReviewIssues) postData.AIPostReviewIssues = aiReviewIssues;
 			if (status === PostStatus.SCHEDULED && publishDate) {
 				postData.publishedAt = new Date(publishDate);
 			}
@@ -574,6 +603,62 @@ export default function CreatePostPage() {
 
 				{content && (
 					<>
+						{aiReviewIssues ? (
+							<div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+								<div className="flex justify-between items-center mb-2">
+									<h3 className="text-sm font-semibold text-yellow-800 flex items-center gap-2">
+										<span>⚠️</span>
+										AI Review Issues
+									</h3>
+									<Button
+										size="sm"
+										variant="outline"
+										onClick={reviewContent}
+										disabled={isReviewing || !content || !getSelectedTitle()}>
+										{isReviewing ? 'Reviewing...' : 'Review Again'}
+									</Button>
+								</div>
+								<p className="text-sm text-yellow-800 mb-3">
+									The AI has identified the following issues with the generated
+									content:
+								</p>
+								<div className="space-y-2">
+									{aiReviewIssues
+										.split('\n')
+										.filter((issue) => issue.trim())
+										.map((issue, index) => (
+											<div
+												key={index}
+												className="flex gap-2 text-sm text-yellow-800">
+												<span className="text-yellow-600 font-bold mt-0.5">
+													•
+												</span>
+												<span className="flex-1">{issue}</span>
+											</div>
+										))}
+								</div>
+							</div>
+						) : (
+							<div className="bg-green-50 border border-green-200 rounded-md p-4">
+								<div className="flex justify-between items-center mb-2">
+									<h3 className="text-sm font-semibold text-green-800 flex items-center gap-2">
+										<span>✓</span>
+										AI Review
+									</h3>
+									<Button
+										size="sm"
+										variant="outline"
+										onClick={reviewContent}
+										disabled={isReviewing || !content || !getSelectedTitle()}>
+										{isReviewing ? 'Reviewing...' : 'Review Again'}
+									</Button>
+								</div>
+								<p className="text-sm text-green-800 font-medium">
+									No issues found
+								</p>
+							</div>
+						)}
+
 						<div className="space-y-2">
 							<Label>Description</Label>
 							<Input
@@ -591,7 +676,7 @@ export default function CreatePostPage() {
 									variant="outline"
 									onClick={generateContent}
 									disabled={isLoading}>
-									Regenerate
+									{isLoading ? 'Regenerating...' : 'Regenerate'}
 								</Button>
 							</div>
 							<MarkdownEditor

@@ -14,6 +14,7 @@ const getPromptTemplate = async (
 		| 'content-to-avoid'
 		| 'title-suggestions'
 		| 'post-creation'
+		| 'post-review'
 		| 'image-prompt-creation'
 		| 'post-edit',
 	blogId: string
@@ -278,6 +279,13 @@ export const generatePostContent = async (
 
 	const parsed = PostContentSchema.parse(JSON.parse(response.output_text));
 
+	const issues = await reviewGeneratedPost(userId, {
+		blogId,
+		postTitle: title,
+		postDescription: parsed.description,
+		postContent: parsed.content,
+	});
+
 	const post = {
 		blogId: blogId,
 		title: title,
@@ -287,9 +295,85 @@ export const generatePostContent = async (
 		authorId: blog.authors[0].id,
 		categoryId: categoryId,
 		tagNames: parsed.tags,
+		AIPostReviewIssues: issues,
 	};
 
 	return post;
+};
+
+export const reviewGeneratedPost = async (
+	userId: string,
+	data: {
+		blogId: string;
+		postTitle: string;
+		postDescription: string;
+		postContent: string;
+	}
+) => {
+	const {blogId, postTitle, postDescription, postContent} = data;
+
+	if (!blogId) {
+		throw new NotFoundError('Blog ID is required', 'BLOG_ID_REQUIRED');
+	}
+
+	const blog = await prisma.blog.findUnique({
+		where: {id: blogId},
+	});
+
+	if (!blog) {
+		throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+	}
+
+	// Check if user is owner or member
+	const isOwner = blog.userId === userId;
+	if (!isOwner) {
+		const member = await prisma.blogMember.findUnique({
+			where: {blogId_userId: {blogId, userId}},
+		});
+		if (!member) {
+			throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
+		}
+	}
+
+	// Prepare prompt
+	let promptTemplate = await getPromptTemplate('post-review', blogId);
+	promptTemplate = replacePlaceholder(
+		promptTemplate,
+		'{{POST TITLE PLACEHOLDER}}',
+		postTitle || ''
+	);
+	promptTemplate = replacePlaceholder(
+		promptTemplate,
+		'{{POST DESCRIPTION PLACEHOLDER}}',
+		postDescription || ''
+	);
+	promptTemplate = replacePlaceholder(
+		promptTemplate,
+		'{{CURRENT_POST_CONTENT_PLACEHOLDER}}',
+		postContent || ''
+	);
+
+	// console.log('Prompt Template:\n', promptTemplate);
+
+	// Call OpenAI API
+	const PostReviewSchema = z.object({
+		issues: z.array(z.string()),
+	});
+
+	const client = new OpenAI({apiKey: blog.openAIApiKey});
+	const response = await client.responses.parse({
+		model: 'gpt-5-mini',
+		input: [{role: 'user', content: promptTemplate}],
+		store: false,
+		text: {format: zodTextFormat(PostReviewSchema, 'post_review')},
+	});
+
+	// console.log('OpenAI Response:\n', response);
+
+	const parsed = PostReviewSchema.parse(JSON.parse(response.output_text));
+
+	// convert issues array to a single string with line breaks
+	return parsed.issues.join('\n');
 };
 
 export const generateImagePrompt = async (blogPost: string, blogId: string) => {
@@ -395,9 +479,17 @@ export const generatePostEdit = async (
 
 	const parsed = PostEditSchema.parse(JSON.parse(response.output_text));
 
+    const issues = await reviewGeneratedPost(userId, {
+		blogId,
+		postTitle: post.title,
+		postDescription: post.description || '',
+		postContent: parsed.content,
+	});
+
 	return {
 		postId,
 		blogId,
 		...parsed,
+        AIPostReviewIssues: issues,
 	};
 };

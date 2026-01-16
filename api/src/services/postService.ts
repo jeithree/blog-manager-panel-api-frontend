@@ -83,6 +83,7 @@ export const createPost = async (
 			imageUrl: imageUrl,
 			content: postData.content,
 			AIGeneratedImagePrompt: postData.AIGeneratedImagePrompt ?? null,
+            AIPostReviewIssues: postData.AIPostReviewIssues ?? null,
 			categoryId: category.id,
 			authorId: author.id,
 			blogId: blog.id,
@@ -105,7 +106,7 @@ export const createPost = async (
 	await RedisCache.deleteByPattern(`public:post:${blog.id}:*`);
 
 	const willPublish = postData.status === PostStatus.PUBLISHED;
-	if (willPublish && blog.netlifySiteId) {
+	if (willPublish) {
 		if (!IS_DEV_MODE) {
 			try {
 				const deploy = await netlifyService.triggerRebuild(
@@ -304,6 +305,9 @@ export const updatePost = async (
 		...(fields.AIGeneratedImagePrompt !== undefined
 			? {AIGeneratedImagePrompt: fields.AIGeneratedImagePrompt}
 			: {}),
+        ...(fields.AIPostReviewIssues !== undefined
+            ? {AIPostReviewIssues: fields.AIPostReviewIssues}
+            : {}),
 		...(fields.categoryId ? {categoryId: fields.categoryId} : {}),
 		...(fields.authorId ? {authorId: fields.authorId} : {}),
 		...(fields.status ? {status: fields.status} : {}),

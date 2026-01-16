@@ -31,6 +31,7 @@ export const createPostSchema = z.object({
 	imageUrl: z.string().min(1, 'Image URL is required').optional(),
 	content: z.string().min(1, 'Content is required').optional(),
 	AIGeneratedImagePrompt: z.string().optional(),
+    AIPostReviewIssues: z.string().optional(),
 	categoryId: z.string().min(1, 'Category ID is required'),
 	authorId: z.string().min(1, 'Author ID is required'),
 	tagIds: z
@@ -83,6 +84,7 @@ export const updatePostSchema = z
 		imageUrl: z.string().min(1, 'Image URL is required').optional(),
 		content: z.string().min(1, 'Content is required').optional(),
 		AIGeneratedImagePrompt: z.string().optional(),
+        AIPostReviewIssues: z.string().optional(),
 		categoryId: z.string().min(1, 'Category ID is required').optional(),
 		authorId: z.string().min(1, 'Author ID is required').optional(),
 		tagIds: z

@@ -124,6 +124,7 @@ model Post {
     imageUrl                String?
     outline                 String?       @db.Text
     AIGeneratedImagePrompt  String?       @db.Text
+    AIPostReviewIssues      String?       @db.Text
     content                 String?       @db.Text
     categoryId              String
     category                Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)

@@ -4,6 +4,7 @@ import {
 	generatePostContentSchema,
 	generateImagePromptSchema,
 	generatePostEditSchema,
+	reviewPostSchema,
 } from '../types/creator.ts';
 import {isAuthenticated} from '../middlewares/auth.ts';
 import * as creatorController from '../controllers/creatorController.ts';
@@ -35,6 +36,13 @@ router.post(
 	isAuthenticated,
 	validateBody(generateImagePromptSchema),
 	creatorController.generateImagePrompt
+);
+
+router.post(
+	'/review-post',
+	isAuthenticated,
+	validateBody(reviewPostSchema),
+	creatorController.reviewPost
 );
 
 export default router;

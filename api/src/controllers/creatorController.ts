@@ -3,6 +3,7 @@ import type {
 	GeneratePostContentDto,
 	GenerateImagePromptDto,
 	GeneratePostEditDto,
+	ReviewPostDto,
 } from '../types/creator.ts';
 import * as creatorService from '../services/creatorService.ts';
 import {successResponse} from '../lib/apiResponse.ts';
@@ -98,6 +99,34 @@ export const generatePostEdit = async (
 		return res
 			.status(200)
 			.json(successResponse('Post edit generated successfully', postEdited));
+	} catch (error) {
+		return next(error);
+	}
+};
+
+export const reviewPost = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const userId = req.session.userId as string;
+		const {blogId, postTitle, postDescription, postContent} =
+			req.body as ReviewPostDto;
+		const issues = await creatorService.reviewGeneratedPost(userId, {
+			blogId,
+			postTitle,
+			postDescription: postDescription || '',
+			postContent,
+		});
+
+		return res
+			.status(200)
+			.json(
+				successResponse('Post reviewed successfully', {
+					AIPostReviewIssues: issues,
+				})
+			);
 	} catch (error) {
 		return next(error);
 	}

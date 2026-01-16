@@ -334,6 +334,13 @@ export default function PostsPage() {
 										<div className="flex-1">
 											<div className="flex items-center gap-2 mb-2">
 												<h3 className="text-xl font-semibold">{post.title}</h3>
+												{post.AIPostReviewIssues && (
+													<Badge
+														variant="outline"
+														className="bg-yellow-50 text-yellow-700 border-yellow-300">
+														has issues
+													</Badge>
+												)}
 												<Badge variant={getStatusBadgeVariant(post.status)}>
 													{post.status}
 												</Badge>

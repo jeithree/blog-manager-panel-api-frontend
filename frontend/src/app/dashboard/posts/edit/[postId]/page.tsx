@@ -67,6 +67,8 @@ export default function EditPostPage() {
 	const [showConfirmRegenerateContent, setShowConfirmRegenerateContent] =
 		useState(false);
 	const [isEditor, setIsEditor] = useState(false);
+	const [aiReviewIssues, setAiReviewIssues] = useState('');
+	const [isReviewing, setIsReviewing] = useState(false);
 
 	const loadPost = useCallback(async () => {
 		setIsLoading(true);
@@ -94,6 +96,9 @@ export default function EditPostPage() {
 
 				// load existing AI image prompt
 				setImagePrompt(postData.AIGeneratedImagePrompt || '');
+
+				// load AI review issues
+				setAiReviewIssues(postData.AIPostReviewIssues || '');
 
 				if (postData.publishedAt) {
 					const date = new Date(postData.publishedAt);
@@ -187,6 +192,9 @@ export default function EditPostPage() {
 				// slug is provided by the generator
 				setSlug(data.slug);
 
+				// Set AI review issues
+				setAiReviewIssues(data.AIPostReviewIssues || '');
+
 				// Map generated tag names to existing tag IDs (do not create new tags)
 				if (data.tagNames && data.tagNames.length > 0) {
 					const matchedIds = data.tagNames
@@ -253,6 +261,28 @@ export default function EditPostPage() {
 		await generateContent();
 	};
 
+	const reviewContent = async () => {
+		if (!post || !title || !content) return;
+
+		setIsReviewing(true);
+		try {
+			const response = await creatorService.reviewPost({
+				blogId: post.blogId,
+				postTitle: title,
+				postDescription: description,
+				postContent: content,
+			});
+
+			if (response.success && response.data) {
+				setAiReviewIssues(response.data.AIPostReviewIssues || '');
+			}
+		} catch (error) {
+			console.error('Failed to review content:', error);
+		} finally {
+			setIsReviewing(false);
+		}
+	};
+
 	const copyTextToClipboard = async (text: string, isPrompt = false) => {
 		try {
 			await navigator.clipboard.writeText(text);
@@ -282,6 +312,7 @@ export default function EditPostPage() {
 				...(status && {status}),
 				...(publishAtDate && {publishedAt: publishAtDate}),
 				AIGeneratedImagePrompt: imagePrompt,
+				AIPostReviewIssues: aiReviewIssues,
 			};
 
 			const response = await postService.updatePost(
@@ -469,6 +500,59 @@ export default function EditPostPage() {
 								})}
 							</div>
 						</div>
+					</CardContent>
+				</Card>
+
+				<Card>
+					<CardHeader>
+						<div className="flex justify-between items-center">
+							<CardTitle className="flex items-center gap-2">
+								{aiReviewIssues ? (
+									<span className="text-yellow-600">⚠️</span>
+								) : (
+									<span className="text-green-600">✓</span>
+								)}
+								AI Review Issues
+							</CardTitle>
+							<Button
+								size="sm"
+								variant="outline"
+								onClick={reviewContent}
+								disabled={isReviewing || !content || !title}>
+								{isReviewing ? 'Reviewing...' : 'Review Again'}
+							</Button>
+						</div>
+					</CardHeader>
+					<CardContent>
+						{aiReviewIssues ? (
+							<div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+								<p className="text-sm text-yellow-800 mb-3">
+									The AI has identified the following issues with the generated
+									content:
+								</p>
+								<div className="space-y-2">
+									{aiReviewIssues
+										.split('\n')
+										.filter((issue) => issue.trim())
+										.map((issue, index) => (
+											<div
+												key={index}
+												className="flex gap-2 text-sm text-yellow-800">
+												<span className="text-yellow-600 font-bold mt-0.5">
+													•
+												</span>
+												<span className="flex-1">{issue}</span>
+											</div>
+										))}
+								</div>
+							</div>
+						) : (
+							<div className="bg-green-50 border border-green-200 rounded-md p-4">
+								<p className="text-sm text-green-800 font-medium">
+									No issues found
+								</p>
+							</div>
+						)}
 					</CardContent>
 				</Card>
 
