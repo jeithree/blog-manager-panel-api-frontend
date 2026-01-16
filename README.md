@@ -440,9 +440,37 @@ For detailed API documentation, refer to the route files in [api/src/routes](api
 | --------------------- | --------------- | -------- | ----------------------- |
 | `NEXT_PUBLIC_API_URL` | Backend API URL | Yes      | `http://localhost:5000` |
 
-## ⚠️ Netlify Integration Requirement
+## ⚠️ Third-Party Service Requirements
 
-Each blog in the system requires a Netlify site ID (`netlifySiteId`) for deployment and hosting. You must have a Netlify site set up before creating a blog in this system.
+### Netlify Integration
+
+Each blog in the system requires a Netlify site for deployment and hosting. Before creating a blog, you must:
+
+- Have a Netlify account and site set up
+- Provide the Netlify Site ID (`netlifySiteId`)
+- Provide a Netlify Personal Access Token (`netlifyToken`)
+
+### Cloudflare R2 Storage
+
+Each blog requires its own Cloudflare R2 bucket for storing images and media files. Before creating a blog, you must have:
+
+- A Cloudflare account with R2 enabled
+- An R2 bucket created for the blog
+- R2 credentials:
+  - **Account ID** (`R2AccountId`)
+  - **Access Key ID** (`R2AccessKeyId`)
+  - **Secret Access Key** (`R2SecretAccessKey`)
+  - **Bucket Name** (`R2BucketName`)
+  - **Custom Domain** (`R2CustomDomain`) - for public access
+
+### OpenAI API
+
+For AI-powered content generation features, each blog requires:
+
+- An OpenAI API key (`openAIApiKey`)
+- Sufficient API credits for content generation
+
+**Note**: All these credentials are configured per-blog during blog creation and can be updated in the blog settings.
 
 ## 📝 License
 
