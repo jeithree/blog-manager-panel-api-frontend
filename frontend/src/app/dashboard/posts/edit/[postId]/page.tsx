@@ -103,7 +103,15 @@ export default function EditPostPage() {
 
 				if (postData.publishedAt) {
 					const date = new Date(postData.publishedAt);
-					setPublishDate(date.toISOString().slice(0, 16));
+					console.log(date);
+
+					// Format for datetime-local input (local timezone, not UTC)
+					const year = date.getFullYear();
+					const month = String(date.getMonth() + 1).padStart(2, '0');
+					const day = String(date.getDate()).padStart(2, '0');
+					const hours = String(date.getHours()).padStart(2, '0');
+					const minutes = String(date.getMinutes()).padStart(2, '0');
+					setPublishDate(`${year}-${month}-${day}T${hours}:${minutes}`);
 				}
 
 				// Load categories and tags
