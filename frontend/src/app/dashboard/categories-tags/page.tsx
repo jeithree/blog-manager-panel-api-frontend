@@ -18,6 +18,7 @@ import {categoryService, type Category} from '@/services/category';
 import {tagService, type Tag} from '@/services/tag';
 import {blogService, type Blog} from '@/services/blog';
 import {useSession} from '@/hooks/useSession';
+import {useSelectedBlog} from '@/hooks/useSelectedBlog';
 import {Textarea} from '@/components/ui/textarea';
 import {
 	Select,
@@ -29,7 +30,7 @@ import {
 
 export default function CategoriesTagsPage() {
 	const [blogs, setBlogs] = useState<Blog[]>([]);
-	const [blogId, setBlogId] = useState('');
+	const {selectedBlogId, setSelectedBlogId} = useSelectedBlog();
 	const [categories, setCategories] = useState<Category[]>([]);
 	const [tags, setTags] = useState<Tag[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
@@ -63,8 +64,8 @@ export default function CategoriesTagsPage() {
 		setIsLoading(true);
 		try {
 			const [categoriesRes, tagsRes] = await Promise.all([
-				categoryService.getCategories({blogId}),
-				tagService.getTags({blogId}),
+				categoryService.getCategories({blogId: selectedBlogId}),
+				tagService.getTags({blogId: selectedBlogId}),
 			]);
 
 			if (categoriesRes.success && categoriesRes.data) {
@@ -78,41 +79,38 @@ export default function CategoriesTagsPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	}, [blogId]);
+	}, [selectedBlogId]);
 
 	useEffect(() => {
 		loadBlogs();
 	}, [loadBlogs]);
 
-	const visibleBlogs = useMemo(() => {
-		if (!session?.user) return [] as Blog[];
-		return blogs.filter((b) => b.userId === session.user!.id);
-	}, [blogs, session]);
+	// Validate and set default blogId after blogs are loaded
+	useEffect(() => {
+		if (blogs.length > 0) {
+			const blogExists = selectedBlogId
+				? blogs.some((b) => b.id === selectedBlogId)
+				: false;
+			if (!blogExists) {
+				setSelectedBlogId(blogs[0].id);
+			}
+		}
+	}, [blogs, selectedBlogId, setSelectedBlogId]);
 
 	useEffect(() => {
-		if (!visibleBlogs.length) {
-			setBlogId('');
-			return;
-		}
-		if (!blogId || !visibleBlogs.some((b) => b.id === blogId)) {
-			setBlogId(visibleBlogs[0].id);
-		}
-	}, [visibleBlogs, blogId]);
-
-	useEffect(() => {
-		if (blogId) {
+		if (selectedBlogId) {
 			loadData();
 		}
-	}, [blogId, loadData]);
+	}, [selectedBlogId, loadData]);
 
 	const handleCreateCategory = async () => {
-		if (!newCategoryName || !blogId || !newCategorySlug) return;
+		if (!newCategoryName || !selectedBlogId || !newCategorySlug) return;
 
 		setIsCreatingCategory(true);
 		try {
 			const response = await categoryService.createCategory({
 				name: newCategoryName,
-				blogId,
+				blogId: selectedBlogId,
 				slug: newCategorySlug,
 				description: newCategoryDescription,
 			});
@@ -136,13 +134,13 @@ export default function CategoriesTagsPage() {
 	};
 
 	const handleCreateTag = async () => {
-		if (!newTagName || !blogId || !newTagSlug) return;
+		if (!newTagName || !selectedBlogId || !newTagSlug) return;
 
 		setIsCreatingTag(true);
 		try {
 			const response = await tagService.createTag({
 				name: newTagName,
-				blogId,
+				blogId: selectedBlogId,
 				slug: newTagSlug,
 			});
 
@@ -163,6 +161,9 @@ export default function CategoriesTagsPage() {
 		}
 	};
 
+	const isOwner =
+		session?.user?.id === blogs.find((b) => b.id === selectedBlogId)?.userId;
+
 	return (
 		<div className="max-w-4xl mx-auto px-4 py-8">
 			<h1 className="text-3xl font-bold mb-6">Categories & Tags</h1>
@@ -175,13 +176,14 @@ export default function CategoriesTagsPage() {
 					<div className="space-y-2">
 						<Label htmlFor="blogId">Select Blog</Label>
 						<Select
-							value={blogId}
-							onValueChange={setBlogId}>
+							name="blogId"
+							value={selectedBlogId}
+							onValueChange={setSelectedBlogId}>
 							<SelectTrigger>
 								<SelectValue placeholder="Select a blog" />
 							</SelectTrigger>
 							<SelectContent>
-								{visibleBlogs.map((blog) => (
+								{blogs.map((blog) => (
 									<SelectItem
 										key={blog.id}
 										value={blog.id}>
@@ -194,18 +196,20 @@ export default function CategoriesTagsPage() {
 				</CardContent>
 			</Card>
 
-			{blogId && (
+			{selectedBlogId && (
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<Card>
 						<CardHeader>
 							<div className="flex justify-between items-center">
 								<CardTitle>Categories</CardTitle>
-								<Button
-									size="sm"
-									onClick={() => setShowCategoryDialog(true)}
-									disabled={!blogId}>
-									Add Category
-								</Button>
+								{isOwner && (
+									<Button
+										size="sm"
+										onClick={() => setShowCategoryDialog(true)}
+										disabled={!selectedBlogId}>
+										Add Category
+									</Button>
+								)}
 							</div>
 						</CardHeader>
 						<CardContent>
@@ -236,12 +240,14 @@ export default function CategoriesTagsPage() {
 						<CardHeader>
 							<div className="flex justify-between items-center">
 								<CardTitle>Tags</CardTitle>
-								<Button
-									size="sm"
-									onClick={() => setShowTagDialog(true)}
-									disabled={!blogId}>
-									Add Tag
-								</Button>
+								{isOwner && (
+									<Button
+										size="sm"
+										onClick={() => setShowTagDialog(true)}
+										disabled={!selectedBlogId}>
+										Add Tag
+									</Button>
+								)}
 							</div>
 						</CardHeader>
 						<CardContent>

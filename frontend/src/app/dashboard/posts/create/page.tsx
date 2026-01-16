@@ -4,6 +4,7 @@ import React, {useState, useEffect, useCallback} from 'react';
 import {useRouter} from 'next/navigation';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
+import {useSelectedBlog} from '@/hooks/useSelectedBlog';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {
@@ -31,10 +32,10 @@ export default function CreatePostPage() {
 	const router = useRouter();
 	const [currentStep, setCurrentStep] = useState<Step>('blog');
 	const [isLoading, setIsLoading] = useState(false);
+	const {selectedBlogId, setSelectedBlogId} = useSelectedBlog();
 
 	// Form data
 	const [blogs, setBlogs] = useState<Blog[]>([]);
-	const [selectedBlogId, setSelectedBlogId] = useState('');
 	const [categories, setCategories] = useState<Category[]>([]);
 	const [tags, setTags] = useState<Tag[]>([]);
 	const [authors, setAuthors] = useState<Author[]>([]);
@@ -71,9 +72,6 @@ export default function CreatePostPage() {
 			const response = await blogService.getBlogs();
 			if (response.success && response.data) {
 				setBlogs(response.data);
-				if (response.data.length > 0 && !selectedBlogId) {
-					setSelectedBlogId(response.data[0].id);
-				}
 			} else {
 				toast.error(response.error?.message || 'Failed to load blogs');
 			}
@@ -81,7 +79,7 @@ export default function CreatePostPage() {
 			console.error('Failed to load blogs:', error);
 			toast.error('An unexpected error occurred while loading blogs');
 		}
-	}, [selectedBlogId]);
+	}, []);
 
 	const reviewContent = async () => {
 		if (!selectedBlogId || !getSelectedTitle() || !description || !content)
@@ -164,6 +162,18 @@ export default function CreatePostPage() {
 	useEffect(() => {
 		loadBlogs();
 	}, [loadBlogs]);
+
+	// Validate and set default blogId after blogs are loaded
+	useEffect(() => {
+		if (blogs.length > 0) {
+			const blogExists = selectedBlogId
+				? blogs.some((b) => b.id === selectedBlogId)
+				: false;
+			if (!blogExists) {
+				setSelectedBlogId(blogs[0].id);
+			}
+		}
+	}, [blogs, selectedBlogId, setSelectedBlogId]);
 
 	useEffect(() => {
 		if (selectedBlogId) {

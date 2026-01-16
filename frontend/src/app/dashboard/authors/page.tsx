@@ -6,6 +6,7 @@ import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {useSelectedBlog} from '@/hooks/useSelectedBlog';
 import {
 	Select,
 	SelectContent,
@@ -19,7 +20,7 @@ import {useSession} from '@/hooks/useSession';
 
 export default function AuthorsPage() {
 	const [blogs, setBlogs] = useState<Blog[]>([]);
-	const [selectedBlogId, setSelectedBlogId] = useState('');
+	const {selectedBlogId, setSelectedBlogId} = useSelectedBlog();
 	const [authors, setAuthors] = useState<Author[]>([]);
 	const [name, setName] = useState('');
 	const [slug, setSlug] = useState('');
@@ -54,20 +55,17 @@ export default function AuthorsPage() {
 		loadBlogs();
 	}, [loadBlogs]);
 
-	const visibleBlogs = useMemo(() => {
-		if (!session?.user) return [] as Blog[];
-		return blogs.filter((b) => b.userId === session.user!.id);
-	}, [blogs, session]);
-
+	// Validate and set default blogId after blogs are loaded
 	useEffect(() => {
-		if (!visibleBlogs.length) {
-			setSelectedBlogId('');
-			return;
+		if (blogs.length > 0) {
+			const blogExists = selectedBlogId
+				? blogs.some((b) => b.id === selectedBlogId)
+				: false;
+			if (!blogExists) {
+				setSelectedBlogId(blogs[0].id);
+			}
 		}
-		if (!selectedBlogId || !visibleBlogs.some((b) => b.id === selectedBlogId)) {
-			setSelectedBlogId(visibleBlogs[0].id);
-		}
-	}, [visibleBlogs, selectedBlogId]);
+	}, [blogs, selectedBlogId, setSelectedBlogId]);
 
 	useEffect(() => {
 		if (selectedBlogId) {
@@ -77,7 +75,7 @@ export default function AuthorsPage() {
 
 	const handleCreate = async () => {
 		if (!name.trim() || !selectedBlogId) return;
-		const selected = visibleBlogs.find((b) => b.id === selectedBlogId);
+		const selected = blogs.find((b) => b.id === selectedBlogId);
 		const isOwner = selected?.userId === session?.user?.id;
 		if (!isOwner) return;
 		setIsLoading(true);
@@ -116,6 +114,9 @@ export default function AuthorsPage() {
 		}
 	};
 
+	const isOwner =
+		session?.user?.id === blogs.find((b) => b.id === selectedBlogId)?.userId;
+
 	return (
 		<div className="max-w-4xl mx-auto space-y-6 py-8">
 			<div className="flex items-center justify-between">
@@ -140,7 +141,7 @@ export default function AuthorsPage() {
 							<SelectValue placeholder="Select a blog" />
 						</SelectTrigger>
 						<SelectContent>
-							{visibleBlogs.map((blog) => (
+							{blogs.map((blog) => (
 								<SelectItem
 									key={blog.id}
 									value={blog.id}>
@@ -152,54 +153,56 @@ export default function AuthorsPage() {
 				</CardContent>
 			</Card>
 
-			<Card className="shadow-sm">
-				<CardHeader>
-					<CardTitle>Create Author</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="authorName">Name</Label>
-						<Input
-							id="authorName"
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-							placeholder="e.g. Jane Doe"
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="authorSlug">Slug</Label>
-						<Input
-							id="authorSlug"
-							value={slug}
-							onChange={(e) => setSlug(e.target.value)}
-							placeholder="optional (auto-generated from name)"
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="authorBio">Bio</Label>
-						<Input
-							id="authorBio"
-							value={bio}
-							onChange={(e) => setBio(e.target.value)}
-							placeholder="short biography (optional)"
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="authorAvatar">Avatar URL</Label>
-						<Input
-							id="authorAvatar"
-							value={avatar}
-							onChange={(e) => setAvatar(e.target.value)}
-							placeholder="https://... (optional)"
-						/>
-					</div>
-					<Button
-						onClick={handleCreate}
-						disabled={isLoading || !name.trim() || !selectedBlogId}>
-						{isLoading ? 'Saving...' : 'Create Author'}
-					</Button>
-				</CardContent>
-			</Card>
+			{isOwner && (
+				<Card className="shadow-sm">
+					<CardHeader>
+						<CardTitle>Create Author</CardTitle>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<div className="space-y-2">
+							<Label htmlFor="authorName">Name</Label>
+							<Input
+								id="authorName"
+								value={name}
+								onChange={(e) => setName(e.target.value)}
+								placeholder="e.g. Jane Doe"
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="authorSlug">Slug</Label>
+							<Input
+								id="authorSlug"
+								value={slug}
+								onChange={(e) => setSlug(e.target.value)}
+								placeholder="optional (auto-generated from name)"
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="authorBio">Bio</Label>
+							<Input
+								id="authorBio"
+								value={bio}
+								onChange={(e) => setBio(e.target.value)}
+								placeholder="short biography (optional)"
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="authorAvatar">Avatar URL</Label>
+							<Input
+								id="authorAvatar"
+								value={avatar}
+								onChange={(e) => setAvatar(e.target.value)}
+								placeholder="https://... (optional)"
+							/>
+						</div>
+						<Button
+							onClick={handleCreate}
+							disabled={isLoading || !name.trim() || !selectedBlogId}>
+							{isLoading ? 'Saving...' : 'Create Author'}
+						</Button>
+					</CardContent>
+				</Card>
+			)}
 
 			<Card className="shadow-sm">
 				<CardHeader>

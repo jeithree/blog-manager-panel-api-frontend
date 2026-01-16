@@ -17,6 +17,7 @@ import {categoryService, type Category} from '@/services/category';
 import {tagService, type Tag} from '@/services/tag';
 import {blogService, type Blog} from '@/services/blog';
 import {useSession} from '@/hooks/useSession';
+import {useSelectedBlog} from '@/hooks/useSelectedBlog';
 import {blogMemberService} from '@/services/blogMember';
 
 export default function PostsPage() {
@@ -28,7 +29,8 @@ export default function PostsPage() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [isEditor, setIsEditor] = useState(false);
 
-	const [blogId, setBlogId] = useState('');
+	const {selectedBlogId: blogId, setSelectedBlogId: setBlogId} =
+		useSelectedBlog();
 	const ALL_VALUE = 'all';
 	const [selectedCategoryId, setSelectedCategoryId] =
 		useState<string>(ALL_VALUE);
@@ -50,14 +52,11 @@ export default function PostsPage() {
 			const response = await blogService.getBlogs();
 			if (response.success && response.data) {
 				setBlogs(response.data);
-				if (response.data.length > 0 && !blogId) {
-					setBlogId(response.data[0].id);
-				}
 			}
 		} catch (error) {
 			console.error('Failed to load blogs:', error);
 		}
-	}, [blogId]);
+	}, []);
 
 	const loadPosts = useCallback(async () => {
 		setIsLoading(true);
@@ -115,6 +114,16 @@ export default function PostsPage() {
 	useEffect(() => {
 		loadBlogs();
 	}, [loadBlogs]);
+
+	// Validate and set default blogId after blogs are loaded
+	useEffect(() => {
+		if (blogs.length > 0) {
+			const blogExists = blogId ? blogs.some((b) => b.id === blogId) : false;
+			if (!blogExists) {
+				setBlogId(blogs[0].id);
+			}
+		}
+	}, [blogs, blogId, setBlogId]);
 
 	// Load posts and filters when dependencies change
 	useEffect(() => {
