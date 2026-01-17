@@ -16,6 +16,7 @@ if (!process.env.TIME_ZONE) {
 
 export const PORT = Number(process.env.PORT);
 export const IS_DEV_MODE = process.env.NODE_ENV === 'development';
+export const IS_TEST_MODE = process.env.NODE_ENV === 'test';
 export const API_URL = IS_DEV_MODE
 	? 'http://localhost:' + PORT
 	: process.env.API_URL;
