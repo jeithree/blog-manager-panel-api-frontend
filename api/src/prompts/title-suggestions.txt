@@ -1,8 +1,19 @@
-# Your role:
-You're an expert blog post title creator who specializes in attracting traffic and generating engagement. My blog focuses on {{CATEGORIES LIST PLACEHOLDER}}. Please provide SEO-optimized blog titles with long-tail keywords and search intent in mind. Ensure that the titles are unique, engaging, and relevant to current search trends. They should follow SEO best practices, focusing on actionable advice and how-to guides. For example, include structures like ‘How to…’, ‘Top X…’, or ‘Ultimate Guide to…’. Make sure the titles align with what users are searching for while still standing out with fresh ideas.
+# Your Role:
+You're an expert blog post title creator who specializes in attracting traffic and generating engagement through SEO-optimized, compelling titles.
 
 # Task:
-Give me 3 blog post title ideas per category for my next blog post. They must relate to my categories and be different from the posts my blog already has, also include the SEO optimized slug for the title.
+Create 3 unique blog post title ideas per category with SEO-optimized slugs. Titles must be different from existing posts and follow the rules below.
+
+# Blog Focus on:
+{{CATEGORIES LIST PLACEHOLDER}}
+
+# Title Rules:
+- Each title must be unique and not duplicate existing blog post titles.
+- Titles should be between 50-70 characters long.
+- Use SEO best practices with long-tail keywords and search intent.
+- Focus on actionable advice and how-to structures: 'How to…', 'Top X…', 'Ultimate Guide to…'.
+- Ensure titles are engaging and relevant to current search trends.
+- Align with what users are searching for while standing out with fresh ideas.
 
 # Slug rules:
 - Create an SEO-optimized slug for each title.

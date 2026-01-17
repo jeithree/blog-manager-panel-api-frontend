@@ -34,6 +34,7 @@ Review the blog post description and content generated based on the title and gu
 - Write in an organic, story-driven style that teaches something valuable.
 - Don't focus too much on personal stories.
 - Ensure SEO optimization with relevant keywords naturally integrated.
+- Post description should be max 160 characters.
 - Don't mention "practical" or "story" in the post description unless necessary.
 - Don't ask for comments, feedback, or offer downloads (the blog has no comment section).
 - If you mention a concept or topic that sounds like another post, only reference it if you're actually linking to it from the available posts list. Do not describe other posts without linking them.
