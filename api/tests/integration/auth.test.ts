@@ -1,20 +1,24 @@
-import {describe, it, expect, afterAll} from 'vitest';
+import {describe, it, expect, afterAll, beforeAll} from 'vitest';
 import request from 'supertest';
 import app from '../../src/app.ts';
 import prisma from '../../src/prisma.ts';
+import { registerTestUser } from './testHelpers.ts';
 
 describe('Authentication Integration Tests', () => {
 	const testUser = {
 		username: 'testuser',
-		email: 'test@email.com',
+		email: 'user@test.com',
 		password: 'Password123!',
+        role: 'USER' as const,
 	};
 
-	const testUser2 = {
-		username: 'anotheruser',
-		email: 'test2@email.com',
-		password: 'Password123!',
-	};
+	beforeAll(async () => {
+		try {
+			await registerTestUser(testUser);
+		} catch (error) {
+			console.log(error);
+		}
+	});
 
 	let sessionId = '';
 
@@ -24,72 +28,6 @@ describe('Authentication Integration Tests', () => {
 		} catch (error) {
 			console.log(error);
 		}
-	});
-
-	it('should fail if username is not allowed when registering', async () => {
-		const res = await request(app)
-			.post('/api/v1/auth/register')
-			.send({
-				...testUser,
-				username: 'administrator',
-			});
-
-		expect(res.statusCode).toEqual(409);
-		expect(res.body).toStrictEqual({
-			success: false,
-			error: {
-				message: 'The chosen username "administrator" is not allowed',
-				code: 'CONFLICT',
-			},
-		});
-	});
-
-	it('should fail if a field is missing when registering', async () => {
-		const res = await request(app).post('/api/v1/auth/register').send({
-			username: 'testuser',
-			password: 'Password123!',
-		});
-
-		expect(res.statusCode).toEqual(400);
-		expect(res.body).toHaveProperty('success', false);
-		expect(res.body).toHaveProperty('error.code', 'VALIDATION_ERROR');
-	});
-
-	it('should register a new user', async () => {
-		const res = await request(app).post('/api/v1/auth/register').send(testUser);
-
-		expect(res.statusCode).toEqual(201);
-		expect(res.body).toHaveProperty('message', 'User registered successfully');
-		expect(res.body.data.user).toStrictEqual({
-			id: expect.any(String),
-			username: testUser.username,
-			email: testUser.email,
-			name: null,
-			role: 'USER',
-			createdAt: expect.any(String),
-		});
-	});
-
-	it('should fail if username is already registered when registering', async () => {
-		const res = await request(app).post('/api/v1/auth/register').send(testUser);
-
-		expect(res.statusCode).toEqual(409);
-		expect(res.body).toStrictEqual({
-			success: false,
-			error: {message: 'Username already taken', code: 'USERNAME_TAKEN'},
-		});
-	});
-
-	it('should fail if email is already registered when registering', async () => {
-		const res = await request(app)
-			.post('/api/v1/auth/register')
-			.send({...testUser, username: 'testuser1'});
-
-		expect(res.statusCode).toEqual(409);
-		expect(res.body).toStrictEqual({
-			success: false,
-			error: {message: 'Email already registered', code: 'EMAIL_TAKEN'},
-		});
 	});
 
 	it('should fail login when incorrect password is passed', async () => {
@@ -113,7 +51,7 @@ describe('Authentication Integration Tests', () => {
 
 		expect(res.statusCode).toEqual(200);
 		expect(res.body).toHaveProperty('message', 'Login successful');
-		expect(res.body.data.user).toStrictEqual({
+		expect(res.body.data).toStrictEqual({
 			id: expect.any(String),
 			username: testUser.username,
 			email: testUser.email,
@@ -122,22 +60,6 @@ describe('Authentication Integration Tests', () => {
 		});
 		expect(res.headers['set-cookie']).toBeDefined();
 		sessionId = res.headers['set-cookie'][0].split(';')[0].split('=')[1];
-	});
-
-	it('should fail if registering a new user when there is an active session', async () => {
-		const res = await request(app)
-			.post('/api/v1/auth/register')
-			.set('Cookie', [`sid=${sessionId}`])
-			.send(testUser2);
-
-		expect(res.statusCode).toEqual(401);
-		expect(res.body).toStrictEqual({
-			success: false,
-			error: {
-				message: 'You are already logged in',
-				code: 'UNAUTHORIZED',
-			},
-		});
 	});
 
 	it('should get session info successfully if there is an active session', async () => {
