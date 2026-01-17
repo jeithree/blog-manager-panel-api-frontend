@@ -181,4 +181,26 @@ describe('Admin Integration Tests', () => {
 
 		await logout(adminSessionId);
 	});
+
+	it('should convert username and email to lowercase when creating a user', async () => {
+		const adminSessionId = await loginAndGetSession(
+			adminUser.email,
+			adminUser.password,
+		);
+
+		const res = await request(app)
+			.post('/api/v1/admin/create-user')
+			.set('Cookie', [`${sessionCookieName}=${adminSessionId}`])
+			.send({
+				username: 'TestUserUpper',
+				email: 'user@Test.com',
+				password: testUser.password,
+			});
+		expect(res.statusCode).toEqual(201);
+		expect(res.body).toHaveProperty('success', true);
+		expect(res.body.data).toHaveProperty('username', 'testuserupper');
+		expect(res.body.data).toHaveProperty('email', 'user@test.com');
+
+		await logout(adminSessionId);
+	});
 });
