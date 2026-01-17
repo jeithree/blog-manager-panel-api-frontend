@@ -21,6 +21,10 @@ export const registerTestUser = async (userToCreate: {
 	});
 };
 
+export const deleteTestUser = async (email: string) => {
+    await prisma.user.delete({where: {email}});
+};
+
 export const loginAndGetSession = async (email: string, password: string) => {
 	const res = await request(app)
 		.post('/api/v1/auth/login')
