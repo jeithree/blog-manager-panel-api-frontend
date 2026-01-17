@@ -5,7 +5,7 @@ import {RateLimitError} from '../lib/appError.ts';
 
 export const loginLimiter = rateLimit({
 	windowMs: 15 * 60 * 1000,
-	max: 3,
+	max: 10,
 	handler: (req: Request, _res: Response, next: NextFunction) => {
 		Logger.log(`Rate limit exceeded for login: ${req.ip}`, 'info');
 		next(
@@ -19,7 +19,7 @@ export const loginLimiter = rateLimit({
 
 export const createUserLimiter = rateLimit({
 	windowMs: 60 * 60 * 1000,
-	max: 10,
+	max: 60,
 	handler: (req: Request, _res: Response, next: NextFunction) => {
 		Logger.log(`Rate limit exceeded for user creation: ${req.ip}`, 'info');
 		next(
