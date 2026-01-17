@@ -1,15 +1,19 @@
 import {describe, it, expect, afterAll, beforeAll} from 'vitest';
 import request from 'supertest';
 import app from '../../src/app.ts';
-import prisma from '../../src/prisma.ts';
-import {registerTestUser, loginAndGetSession, logout} from './testHelpers.ts';
+import {
+	registerTestUser,
+	loginAndGetSession,
+	logout,
+	deleteTestUser,
+} from './testHelpers.ts';
 
 describe('User Integration Tests', () => {
 	const testUser = {
 		username: 'testuser',
 		email: 'user@test.com',
 		password: 'Password123!',
-        role: 'USER' as const,
+		role: 'USER' as const,
 	};
 
 	let sessionId = '';
@@ -25,7 +29,7 @@ describe('User Integration Tests', () => {
 	afterAll(async () => {
 		try {
 			await logout(sessionId);
-			await prisma.user.delete({where: {email: testUser.email}});
+			await deleteTestUser(testUser.email);
 		} catch (error) {
 			console.log(error);
 		}
