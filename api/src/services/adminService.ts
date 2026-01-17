@@ -19,7 +19,7 @@ export const NOT_ALLOWED_USERNAMES = [
 	'supervisor',
 	'gestor',
 	'administrativo',
-	'administración',
+	'administracion',
 	'sysadmin',
 	// English
 	'admin',
