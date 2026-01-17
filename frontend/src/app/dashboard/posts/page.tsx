@@ -153,16 +153,16 @@ export default function PostsPage() {
 		determineEditor();
 	}, [blogId, loadFilters, loadPosts, userId]);
 
-	const getStatusBadgeVariant = (status: PostStatus) => {
+	const getStatusBadgeStyle = (status: PostStatus) => {
 		switch (status) {
 			case PostStatus.PUBLISHED:
-				return 'default';
+				return 'bg-green-100 text-green-800 border-green-300 hover:bg-green-100';
 			case PostStatus.SCHEDULED:
-				return 'secondary';
+				return 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-100';
 			case PostStatus.DRAFT:
-				return 'outline';
+				return 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-100';
 			default:
-				return 'outline';
+				return 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-100';
 		}
 	};
 
@@ -350,7 +350,9 @@ export default function PostsPage() {
 														has suggestions
 													</Badge>
 												)}
-												<Badge variant={getStatusBadgeVariant(post.status)}>
+												<Badge
+													variant="outline"
+													className={getStatusBadgeStyle(post.status)}>
 													{post.status}
 												</Badge>
 											</div>
