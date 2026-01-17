@@ -23,7 +23,8 @@ export const registerTestUser = async (userToCreate: {
 };
 
 export const deleteTestUser = async (email: string) => {
-	await prisma.user.delete({where: {email}});
+	const result = await prisma.user.deleteMany({where: {email}});
+	return result.count;
 };
 
 export const loginAndGetSession = async (email: string, password: string) => {
@@ -35,7 +36,7 @@ export const loginAndGetSession = async (email: string, password: string) => {
 };
 
 export const logout = async (sessionId: string) => {
-    const sessionCookieName = SESSION_COOKIE.name;
+	const sessionCookieName = SESSION_COOKIE.name;
 	await request(app)
 		.post('/api/v1/auth/logout')
 		.set('Cookie', [`${sessionCookieName}=${sessionId}`]);

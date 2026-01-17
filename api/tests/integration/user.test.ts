@@ -10,7 +10,7 @@ import {
 import {SESSION_COOKIE} from '../../src/configs/cookies.ts';
 
 describe('User Integration Tests', () => {
-    const sessionCookieName = SESSION_COOKIE.name;
+	const sessionCookieName = SESSION_COOKIE.name;
 
 	const testUser = {
 		username: 'testuser',
@@ -32,7 +32,10 @@ describe('User Integration Tests', () => {
 	afterAll(async () => {
 		try {
 			await logout(sessionId);
-			await deleteTestUser(testUser.email);
+			const deleted = await deleteTestUser(testUser.email);
+			if (deleted === 0) {
+				console.error('Admin user was not found for deletion.');
+			}
 		} catch (error) {
 			console.log(error);
 		}

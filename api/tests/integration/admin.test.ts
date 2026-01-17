@@ -42,9 +42,12 @@ describe('Admin Integration Tests', () => {
 
 	afterAll(async () => {
 		try {
-			await deleteTestUser(adminUser.email);
+			const deleted = await deleteTestUser(adminUser.email);
+			if (deleted === 0) {
+				console.error('Admin user was not found for deletion.');
+			}
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 		}
 	});
 

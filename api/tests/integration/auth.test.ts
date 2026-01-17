@@ -7,10 +7,10 @@ import {
 	loginAndGetSession,
 	logout,
 } from './testHelpers.ts';
-import { SESSION_COOKIE } from '../../src/configs/cookies.ts';
+import {SESSION_COOKIE} from '../../src/configs/cookies.ts';
 
 describe('Authentication Integration Tests', () => {
-    const sessionCookieName = SESSION_COOKIE.name;
+	const sessionCookieName = SESSION_COOKIE.name;
 
 	const testUser = {
 		username: 'testuser',
@@ -29,7 +29,10 @@ describe('Authentication Integration Tests', () => {
 
 	afterAll(async () => {
 		try {
-			await deleteTestUser(testUser.email);
+			const deleted = await deleteTestUser(testUser.email);
+			if (deleted === 0) {
+				console.error('Admin user was not found for deletion.');
+			}
 		} catch (error) {
 			console.log(error);
 		}
