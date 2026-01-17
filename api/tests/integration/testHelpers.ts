@@ -1,13 +1,24 @@
 import request from 'supertest';
 import app from '../../src/app.ts';
+import prisma from '../../src/prisma.ts';
+import {hashPassword} from '../../src/helpers/password.ts';
 
-export const registerTestUser = async (user: {
+export const registerTestUser = async (userToCreate: {
 	username: string;
 	email: string;
 	password: string;
-    role?: string;
+	role: 'USER' | 'ADMIN';
 }) => {
-	await request(app).post('/api/v1/auth/register').send(user);
+	const hashedPassword = await hashPassword(userToCreate.password,);
+
+	await prisma.user.create({
+		data: {
+			username: userToCreate.username,
+			email: userToCreate.email,
+			password: hashedPassword,
+			role: userToCreate.role,
+		},
+	});
 };
 
 export const loginAndGetSession = async (email: string, password: string) => {
