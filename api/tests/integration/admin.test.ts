@@ -14,20 +14,20 @@ describe('Admin Integration Tests', () => {
 	const sessionCookieName = SESSION_COOKIE.name;
 
 	const adminUser = {
-		username: 'adminUser',
+		username: 'adminuser',
 		email: 'admin@test.com',
 		password: 'AdminPass123!',
 		role: 'ADMIN' as const,
 	};
 
 	const testUser = {
-		username: 'testUser',
+		username: 'testuser',
 		email: 'user@test.com',
 		password: 'Password123!',
 	};
 
 	const testUser2 = {
-		username: 'testUser2',
+		username: 'testuser2',
 		email: 'user2@test.com',
 		password: 'Password123!',
 	};
@@ -149,7 +149,7 @@ describe('Admin Integration Tests', () => {
 		// Try to create another user with the same username but different email
 		const res2 = await request(app)
 			.post('/api/v1/admin/create-user')
-			.set('Cookie', [`${SESSION_COOKIE}=${adminSessionId}`])
+			.set('Cookie', [`${sessionCookieName}=${adminSessionId}`])
 			.send({
 				username: testUser.username,
 				email: 'different@test.com',

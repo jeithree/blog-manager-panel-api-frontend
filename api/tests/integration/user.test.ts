@@ -13,7 +13,7 @@ describe('User Integration Tests', () => {
     const sessionCookieName = SESSION_COOKIE.name;
 
 	const testUser = {
-		username: 'testUser',
+		username: 'testuser',
 		email: 'user@test.com',
 		password: 'Password123!',
 		role: 'USER' as const,
