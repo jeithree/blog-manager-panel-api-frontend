@@ -2,6 +2,7 @@ import request from 'supertest';
 import app from '../../src/app.ts';
 import prisma from '../../src/prisma.ts';
 import {hashPassword} from '../../src/helpers/password.ts';
+import {SESSION_COOKIE} from '../../src/configs/cookies.ts';
 
 export const registerTestUser = async (userToCreate: {
 	username: string;
@@ -9,7 +10,7 @@ export const registerTestUser = async (userToCreate: {
 	password: string;
 	role: 'USER' | 'ADMIN';
 }) => {
-	const hashedPassword = await hashPassword(userToCreate.password,);
+	const hashedPassword = await hashPassword(userToCreate.password);
 
 	await prisma.user.create({
 		data: {
@@ -22,7 +23,7 @@ export const registerTestUser = async (userToCreate: {
 };
 
 export const deleteTestUser = async (email: string) => {
-    await prisma.user.delete({where: {email}});
+	await prisma.user.delete({where: {email}});
 };
 
 export const loginAndGetSession = async (email: string, password: string) => {
@@ -34,7 +35,8 @@ export const loginAndGetSession = async (email: string, password: string) => {
 };
 
 export const logout = async (sessionId: string) => {
+    const sessionCookieName = SESSION_COOKIE.name;
 	await request(app)
 		.post('/api/v1/auth/logout')
-		.set('Cookie', `connect.sid=${sessionId}`);
+		.set('Cookie', [`${sessionCookieName}=${sessionId}`]);
 };

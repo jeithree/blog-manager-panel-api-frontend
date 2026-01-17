@@ -7,10 +7,13 @@ import {
 	logout,
 	deleteTestUser,
 } from './testHelpers.ts';
+import {SESSION_COOKIE} from '../../src/configs/cookies.ts';
 
 describe('User Integration Tests', () => {
+    const sessionCookieName = SESSION_COOKIE.name;
+
 	const testUser = {
-		username: 'testuser',
+		username: 'testUser',
 		email: 'user@test.com',
 		password: 'Password123!',
 		role: 'USER' as const,
@@ -39,7 +42,7 @@ describe('User Integration Tests', () => {
 		sessionId = await loginAndGetSession(testUser.email, testUser.password);
 		const res = await request(app)
 			.get('/api/v1/users/me')
-			.set('Cookie', [`sid=${sessionId}`]);
+			.set('Cookie', [`${sessionCookieName}=${sessionId}`]);
 
 		expect(res.statusCode).toEqual(200);
 		expect(res.body).toHaveProperty('success', true);
@@ -58,7 +61,7 @@ describe('User Integration Tests', () => {
 	it('should update user profile', async () => {
 		const res = await request(app)
 			.patch('/api/v1/users/me')
-			.set('Cookie', [`sid=${sessionId}`])
+			.set('Cookie', [`${sessionCookieName}=${sessionId}`])
 			.send({
 				name: 'Updated Name',
 				avatar: 'https://example.com/avatar.png',

@@ -8,8 +8,11 @@ import {
 	deleteTestUser,
 } from './testHelpers.ts';
 import {NOT_ALLOWED_USERNAMES} from '../../src/services/adminService.ts';
+import {SESSION_COOKIE} from '../../src/configs/cookies.ts';
 
 describe('Admin Integration Tests', () => {
+	const sessionCookieName = SESSION_COOKIE.name;
+
 	const adminUser = {
 		username: 'adminUser',
 		email: 'admin@test.com',
@@ -18,13 +21,13 @@ describe('Admin Integration Tests', () => {
 	};
 
 	const testUser = {
-		username: 'testuser',
+		username: 'testUser',
 		email: 'user@test.com',
 		password: 'Password123!',
 	};
 
 	const testUser2 = {
-		username: 'testuser2',
+		username: 'testUser2',
 		email: 'user2@test.com',
 		password: 'Password123!',
 	};
@@ -61,7 +64,7 @@ describe('Admin Integration Tests', () => {
 		);
 		const res = await request(app)
 			.post('/api/v1/admin/create-user')
-			.set('Cookie', [`sid=${adminSessionId}`])
+			.set('Cookie', [`${sessionCookieName}=${adminSessionId}`])
 			.send(testUser);
 
 		expect(res.statusCode).toEqual(201);
@@ -88,7 +91,7 @@ describe('Admin Integration Tests', () => {
 
 		const res = await request(app)
 			.post('/api/v1/admin/create-user')
-			.set('Cookie', [`sid=${userSessionId}`])
+			.set('Cookie', [`${sessionCookieName}=${userSessionId}`])
 			.send(testUser2);
 
 		expect(res.statusCode).toEqual(401);
@@ -110,7 +113,7 @@ describe('Admin Integration Tests', () => {
 		for (const username of NOT_ALLOWED_USERNAMES) {
 			const res = await request(app)
 				.post('/api/v1/admin/create-user')
-				.set('Cookie', [`sid=${adminSessionId}`])
+				.set('Cookie', [`${sessionCookieName}=${adminSessionId}`])
 				.send({
 					username,
 					email: `${username}@test.com`,
@@ -138,7 +141,7 @@ describe('Admin Integration Tests', () => {
 		// First, create a user successfully
 		const res1 = await request(app)
 			.post('/api/v1/admin/create-user')
-			.set('Cookie', [`sid=${adminSessionId}`])
+			.set('Cookie', [`${sessionCookieName}=${adminSessionId}`])
 			.send(testUser);
 
 		expect(res1.statusCode).toEqual(201);
@@ -146,7 +149,7 @@ describe('Admin Integration Tests', () => {
 		// Try to create another user with the same username but different email
 		const res2 = await request(app)
 			.post('/api/v1/admin/create-user')
-			.set('Cookie', [`sid=${adminSessionId}`])
+			.set('Cookie', [`${SESSION_COOKIE}=${adminSessionId}`])
 			.send({
 				username: testUser.username,
 				email: 'different@test.com',
@@ -161,9 +164,9 @@ describe('Admin Integration Tests', () => {
 		// Try to create another user with the same email but different username
 		const res3 = await request(app)
 			.post('/api/v1/admin/create-user')
-			.set('Cookie', [`sid=${adminSessionId}`])
+			.set('Cookie', [`${sessionCookieName}=${adminSessionId}`])
 			.send({
-				username: 'differentusername',
+				username: 'differentUsername',
 				email: testUser.email,
 				password: testUser.password,
 			});

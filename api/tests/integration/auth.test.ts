@@ -1,15 +1,22 @@
 import {describe, it, expect, afterAll, beforeAll} from 'vitest';
 import request from 'supertest';
 import app from '../../src/app.ts';
-import prisma from '../../src/prisma.ts';
-import { registerTestUser } from './testHelpers.ts';
+import {
+	registerTestUser,
+	deleteTestUser,
+	loginAndGetSession,
+	logout,
+} from './testHelpers.ts';
+import { SESSION_COOKIE } from '../../src/configs/cookies.ts';
 
 describe('Authentication Integration Tests', () => {
+    const sessionCookieName = SESSION_COOKIE.name;
+
 	const testUser = {
-		username: 'testuser',
+		username: 'testUser',
 		email: 'user@test.com',
 		password: 'Password123!',
-        role: 'USER' as const,
+		role: 'USER' as const,
 	};
 
 	beforeAll(async () => {
@@ -20,11 +27,9 @@ describe('Authentication Integration Tests', () => {
 		}
 	});
 
-	let sessionId = '';
-
 	afterAll(async () => {
 		try {
-			await prisma.user.delete({where: {email: testUser.email}});
+			await deleteTestUser(testUser.email);
 		} catch (error) {
 			console.log(error);
 		}
@@ -59,13 +64,23 @@ describe('Authentication Integration Tests', () => {
 			role: 'USER',
 		});
 		expect(res.headers['set-cookie']).toBeDefined();
-		sessionId = res.headers['set-cookie'][0].split(';')[0].split('=')[1];
+
+		const userSessionId = res.headers['set-cookie'][0]
+			.split(';')[0]
+			.split('=')[1];
+
+		await logout(userSessionId);
 	});
 
 	it('should get session info successfully if there is an active session', async () => {
+		const userSessionId = await loginAndGetSession(
+			testUser.email,
+			testUser.password,
+		);
+
 		const res = await request(app)
 			.get('/api/v1/auth/session')
-			.set('Cookie', [`sid=${sessionId}`]);
+			.set('Cookie', [`${sessionCookieName}=${userSessionId}`]);
 
 		expect(res.statusCode).toEqual(200);
 		expect(res.body).toHaveProperty('message', 'Session retrieved');
@@ -78,21 +93,36 @@ describe('Authentication Integration Tests', () => {
 				role: 'USER',
 			},
 		});
+
+		await logout(userSessionId);
 	});
 
 	it('should logout successfully if there is an active session', async () => {
+		const userSessionId = await loginAndGetSession(
+			testUser.email,
+			testUser.password,
+		);
+
 		const res = await request(app)
 			.post('/api/v1/auth/logout')
-			.set('Cookie', [`sid=${sessionId}`]);
+			.set('Cookie', [`${sessionCookieName}=${userSessionId}`]);
 
 		expect(res.statusCode).toEqual(200);
 		expect(res.body).toHaveProperty('message', 'Logout successful');
+
+		await logout(userSessionId);
 	});
 
 	it('should have no active session after logout', async () => {
+		const userSessionId = await loginAndGetSession(
+			testUser.email,
+			testUser.password,
+		);
+		await logout(userSessionId);
+
 		const res = await request(app)
 			.get('/api/v1/auth/session')
-			.set('Cookie', [`sid=${sessionId}`]);
+			.set('Cookie', [`${sessionCookieName}=${userSessionId}`]);
 
 		expect(res.statusCode).toEqual(200);
 		expect(res.body).toHaveProperty('message', 'Session retrieved');
