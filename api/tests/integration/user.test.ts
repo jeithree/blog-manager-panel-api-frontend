@@ -7,8 +7,9 @@ import {registerTestUser, loginAndGetSession, logout} from './testHelpers.ts';
 describe('User Integration Tests', () => {
 	const testUser = {
 		username: 'testuser',
-		email: 'test@email.com',
+		email: 'user@test.com',
 		password: 'Password123!',
+        role: 'USER' as const,
 	};
 
 	let sessionId = '';
@@ -38,7 +39,7 @@ describe('User Integration Tests', () => {
 
 		expect(res.statusCode).toEqual(200);
 		expect(res.body).toHaveProperty('success', true);
-		expect(res.body.data.user).toStrictEqual({
+		expect(res.body.data).toStrictEqual({
 			id: expect.any(String),
 			username: testUser.username,
 			email: testUser.email,
@@ -62,7 +63,7 @@ describe('User Integration Tests', () => {
 		expect(res.statusCode).toEqual(200);
 		expect(res.body).toHaveProperty('message', 'Profile updated successfully');
 		expect(res.body).toHaveProperty('success', true);
-		expect(res.body.data.user).toStrictEqual({
+		expect(res.body.data).toStrictEqual({
 			id: expect.any(String),
 			username: testUser.username,
 			email: testUser.email,
