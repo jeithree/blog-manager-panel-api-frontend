@@ -2,7 +2,7 @@ import {describe, it, expect, afterAll, beforeAll, afterEach} from 'vitest';
 import request from 'supertest';
 import app from '../../src/app.ts';
 import {
-	registerTestUser,
+	createTestUser,
 	loginAndGetSession,
 	logout,
 	deleteTestUser,
@@ -34,7 +34,7 @@ describe('Admin Integration Tests', () => {
 
 	beforeAll(async () => {
 		try {
-			await registerTestUser(adminUser);
+			await createTestUser(adminUser);
 		} catch (error) {
 			console.log(error);
 		}
@@ -85,7 +85,7 @@ describe('Admin Integration Tests', () => {
 	});
 
 	it('should prevent non-admin from creating a new user', async () => {
-		await registerTestUser({...testUser, role: 'USER'});
+		await createTestUser({...testUser, role: 'USER'});
 
 		const userSessionId = await loginAndGetSession(
 			testUser.email,

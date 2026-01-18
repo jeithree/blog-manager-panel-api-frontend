@@ -2,7 +2,7 @@ import {describe, it, expect, afterAll, beforeAll} from 'vitest';
 import request from 'supertest';
 import app from '../../src/app.ts';
 import {
-	registerTestUser,
+	createTestUser,
 	deleteTestUser,
 	loginAndGetSession,
 	logout,
@@ -21,7 +21,7 @@ describe('Authentication Integration Tests', () => {
 
 	beforeAll(async () => {
 		try {
-			await registerTestUser(testUser);
+			await createTestUser(testUser);
 		} catch (error) {
 			console.log(error);
 		}
@@ -31,7 +31,7 @@ describe('Authentication Integration Tests', () => {
 		try {
 			const deleted = await deleteTestUser(testUser.email);
 			if (deleted === 0) {
-				console.error('Admin user was not found for deletion.');
+				console.error('User was not found for deletion.');
 			}
 		} catch (error) {
 			console.log(error);

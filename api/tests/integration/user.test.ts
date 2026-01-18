@@ -2,7 +2,7 @@ import {describe, it, expect, afterAll, beforeAll} from 'vitest';
 import request from 'supertest';
 import app from '../../src/app.ts';
 import {
-	registerTestUser,
+	createTestUser,
 	loginAndGetSession,
 	logout,
 	deleteTestUser,
@@ -23,7 +23,7 @@ describe('User Integration Tests', () => {
 
 	beforeAll(async () => {
 		try {
-			await registerTestUser(testUser);
+			await createTestUser(testUser);
 		} catch (error) {
 			console.log(error);
 		}
