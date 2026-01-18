@@ -4,7 +4,7 @@ import prisma from '../../src/prisma.ts';
 import {hashPassword} from '../../src/helpers/password.ts';
 import {SESSION_COOKIE} from '../../src/configs/cookies.ts';
 
-export const registerTestUser = async (userToCreate: {
+export const createTestUser = async (userToCreate: {
 	username: string;
 	email: string;
 	password: string;
@@ -14,8 +14,8 @@ export const registerTestUser = async (userToCreate: {
 
 	await prisma.user.create({
 		data: {
-			username: userToCreate.username,
-			email: userToCreate.email,
+			username: userToCreate.username.toLocaleLowerCase(),
+			email: userToCreate.email.toLocaleLowerCase(),
 			password: hashedPassword,
 			role: userToCreate.role,
 		},
