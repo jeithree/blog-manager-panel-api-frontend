@@ -9,7 +9,8 @@
 		"dev:worker": "node --env-file=.env.local src/worker.ts",
 		"start": "npx prisma migrate deploy && node src/server.ts",
 		"worker": "npx prisma migrate deploy && node src/worker.ts",
-		"test": "vitest",
+		"test:db": "npx dotenv -e .env.test -- npx prisma migrate reset --force",
+		"test": "npm run test:db && vitest",
 		"type-check": "tsc"
 	},
 	"keywords": [],
@@ -47,6 +48,8 @@
 		"@types/node": "^24.3.1",
 		"@types/node-schedule": "^2.1.8",
 		"@types/supertest": "^6.0.3",
+		"dotenv": "^17.2.3",
+		"dotenv-cli": "^11.0.0",
 		"prisma": "^6.17.1",
 		"supertest": "^7.1.4",
 		"tsx": "^4.20.6",
