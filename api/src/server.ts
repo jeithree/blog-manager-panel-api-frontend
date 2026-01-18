@@ -1,11 +1,9 @@
 import app from './app.ts';
 import * as Logger from './helpers/logger.ts';
 import {startCronJobs} from './services/cronService.ts';
-import {createInitialAdminUser} from './services/adminService.ts';
-import {initPostsCreationQueue} from './queue.ts';
+import {init} from './init.ts';
 
-await createInitialAdminUser();
-await initPostsCreationQueue();
+await init();
 
 app.listen(app.get('port'), async () => {
 	Logger.log(`Server running on http://localhost:${app.get('port')}`, 'info');
