@@ -1,58 +1,45 @@
-import {describe, it, expect, afterAll, beforeAll} from 'vitest';
+import {describe, it, expect, afterEach, beforeEach} from 'vitest';
 import request from 'supertest';
 import app from '../../src/app.ts';
 import {
 	createTestUser,
 	loginAndGetSession,
-	logout,
-	deleteTestUser,
+	clearRedisSessions,
+	clearUserTable,
 } from './testHelpers.ts';
 import {SESSION_COOKIE} from '../../src/configs/cookies.ts';
 
 describe('User Integration Tests', () => {
 	const sessionCookieName = SESSION_COOKIE.name;
+	let agent: ReturnType<typeof request.agent>;
 
-	const testUser = {
-		username: 'testuser',
-		email: 'user@test.com',
-		password: 'Password123!',
-		role: 'USER' as const,
-	};
-
-	let sessionId = '';
-
-	beforeAll(async () => {
-		try {
-			await createTestUser(testUser);
-		} catch (error) {
-			console.log(error);
-		}
+	beforeEach(async () => {
+		agent = request.agent(app);
 	});
 
-	afterAll(async () => {
+	afterEach(async () => {
 		try {
-			await logout(sessionId);
-			const deleted = await deleteTestUser(testUser.email);
-			if (deleted === 0) {
-				console.error('Admin user was not found for deletion.');
-			}
+			await clearUserTable();
+			await clearRedisSessions();
 		} catch (error) {
-			console.log(error);
+			console.error('Error during afterEach cleanup:', error);
 		}
 	});
 
 	it('should get user Data by ID', async () => {
-		sessionId = await loginAndGetSession(testUser.email, testUser.password);
-		const res = await request(app)
+		const user = await createTestUser();
+		const userSessionId = await loginAndGetSession(user.email, user.password);
+
+		const res = await agent
 			.get('/api/v1/users/me')
-			.set('Cookie', [`${sessionCookieName}=${sessionId}`]);
+			.set('Cookie', [`${sessionCookieName}=${userSessionId}`]);
 
 		expect(res.statusCode).toEqual(200);
 		expect(res.body).toHaveProperty('success', true);
 		expect(res.body.data).toStrictEqual({
 			id: expect.any(String),
-			username: testUser.username,
-			email: testUser.email,
+			username: user.username,
+			email: user.email,
 			name: null,
 			avatar: null,
 			role: 'USER',
@@ -62,9 +49,12 @@ describe('User Integration Tests', () => {
 	});
 
 	it('should update user profile', async () => {
-		const res = await request(app)
+		const user = await createTestUser();
+		const userSessionId = await loginAndGetSession(user.email, user.password);
+
+		const res = await agent
 			.patch('/api/v1/users/me')
-			.set('Cookie', [`${sessionCookieName}=${sessionId}`])
+			.set('Cookie', [`${sessionCookieName}=${userSessionId}`])
 			.send({
 				name: 'Updated Name',
 				avatar: 'https://example.com/avatar.png',
@@ -75,8 +65,8 @@ describe('User Integration Tests', () => {
 		expect(res.body).toHaveProperty('success', true);
 		expect(res.body.data).toStrictEqual({
 			id: expect.any(String),
-			username: testUser.username,
-			email: testUser.email,
+			username: user.username,
+			email: user.email,
 			name: 'Updated Name',
 			avatar: 'https://example.com/avatar.png',
 			role: 'USER',
