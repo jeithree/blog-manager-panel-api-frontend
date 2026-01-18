@@ -1,5 +1,4 @@
 import request from 'supertest';
-import app from '../../src/app.ts';
 import prisma from '../../src/prisma.ts';
 import {hashPassword} from '../../src/helpers/password.ts';
 import {SESSION_REDIS_PREFIX} from '../../src/configs/basics.ts';
@@ -46,13 +45,16 @@ export const clearUserTable = async () => {
 	await prisma.user.deleteMany({});
 };
 
-export const loginAndGetSession = async (email: string, password: string) => {
-	const res = await request(app)
-		.post('/api/v1/auth/login')
-		.send({email, password});
+export const loginWithAgent = async (
+	agent: ReturnType<typeof request.agent>,
+	email: string,
+	password: string,
+) => {
+	const res = await agent.post('/api/v1/auth/login').send({email, password});
 
-	const sessionId = res.headers['set-cookie'][0].split(';')[0].split('=')[1];
-	return sessionId;
+	if (res.status !== 200) {
+		throw new Error('Login failed in test helper');
+	}
 };
 
 export const clearRedisSessions = async () => {

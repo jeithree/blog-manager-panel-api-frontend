@@ -3,14 +3,12 @@ import request from 'supertest';
 import app from '../../src/app.ts';
 import {
 	createTestUser,
-	loginAndGetSession,
+	loginWithAgent,
 	clearRedisSessions,
 	clearUserTable,
 } from './testHelpers.ts';
-import {SESSION_COOKIE} from '../../src/configs/cookies.ts';
 
 describe('User Integration Tests', () => {
-	const sessionCookieName = SESSION_COOKIE.name;
 	let agent: ReturnType<typeof request.agent>;
 
 	beforeEach(async () => {
@@ -28,11 +26,9 @@ describe('User Integration Tests', () => {
 
 	it('should get user Data by ID', async () => {
 		const user = await createTestUser();
-		const userSessionId = await loginAndGetSession(user.email, user.password);
+		await loginWithAgent(agent, user.email, user.password);
 
-		const res = await agent
-			.get('/api/v1/users/me')
-			.set('Cookie', [`${sessionCookieName}=${userSessionId}`]);
+		const res = await agent.get('/api/v1/users/me');
 
 		expect(res.statusCode).toEqual(200);
 		expect(res.body).toHaveProperty('success', true);
@@ -50,15 +46,12 @@ describe('User Integration Tests', () => {
 
 	it('should update user profile', async () => {
 		const user = await createTestUser();
-		const userSessionId = await loginAndGetSession(user.email, user.password);
+		await loginWithAgent(agent, user.email, user.password);
 
-		const res = await agent
-			.patch('/api/v1/users/me')
-			.set('Cookie', [`${sessionCookieName}=${userSessionId}`])
-			.send({
-				name: 'Updated Name',
-				avatar: 'https://example.com/avatar.png',
-			});
+		const res = await agent.patch('/api/v1/users/me').send({
+			name: 'Updated Name',
+			avatar: 'https://example.com/avatar.png',
+		});
 
 		expect(res.statusCode).toEqual(200);
 		expect(res.body).toHaveProperty('message', 'Profile updated successfully');

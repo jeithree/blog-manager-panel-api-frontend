@@ -5,12 +5,10 @@ import {
 	clearRedisSessions,
 	clearUserTable,
 	createTestUser,
-	loginAndGetSession,
+	loginWithAgent,
 } from './testHelpers.ts';
-import {SESSION_COOKIE} from '../../src/configs/cookies.ts';
 
 describe('Authentication Integration Tests', () => {
-	const sessionCookieName = SESSION_COOKIE.name;
 	let agent: ReturnType<typeof request.agent>;
 
 	beforeEach(async () => {
@@ -63,11 +61,9 @@ describe('Authentication Integration Tests', () => {
 
 	it('should get session info successfully if there is an active session', async () => {
 		const user = await createTestUser();
-		const userSessionId = await loginAndGetSession(user.email, user.password);
+		await loginWithAgent(agent, user.email, user.password);
 
-		const res = await agent
-			.get('/api/v1/auth/session')
-			.set('Cookie', [`${sessionCookieName}=${userSessionId}`]);
+		const res = await agent.get('/api/v1/auth/session');
 
 		expect(res.statusCode).toEqual(200);
 		expect(res.body).toHaveProperty('message', 'Session retrieved');
@@ -84,11 +80,9 @@ describe('Authentication Integration Tests', () => {
 
 	it('should logout successfully if there is an active session', async () => {
 		const user = await createTestUser();
-		const userSessionId = await loginAndGetSession(user.email, user.password);
+		await loginWithAgent(agent, user.email, user.password);
 
-		const res = await agent
-			.post('/api/v1/auth/logout')
-			.set('Cookie', [`${sessionCookieName}=${userSessionId}`]);
+		const res = await agent.post('/api/v1/auth/logout');
 
 		expect(res.statusCode).toEqual(200);
 		expect(res.body).toHaveProperty('message', 'Logout successful');
@@ -96,15 +90,10 @@ describe('Authentication Integration Tests', () => {
 
 	it('should have no active session after logout', async () => {
 		const user = await createTestUser();
-		const userSessionId = await loginAndGetSession(user.email, user.password);
+		await loginWithAgent(agent, user.email, user.password);
 
-		await agent
-			.post('/api/v1/auth/logout')
-			.set('Cookie', [`${sessionCookieName}=${userSessionId}`]);
-
-		const res = await agent
-			.get('/api/v1/auth/session')
-			.set('Cookie', [`${sessionCookieName}=${userSessionId}`]);
+		await agent.post('/api/v1/auth/logout');
+		const res = await agent.get('/api/v1/auth/session');
 
 		expect(res.statusCode).toEqual(200);
 		expect(res.body).toHaveProperty('message', 'Session retrieved');

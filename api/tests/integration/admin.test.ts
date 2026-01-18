@@ -6,13 +6,11 @@ import {
 	clearUserTable,
 	createTestUser,
 	generateRandomTestUser,
-	loginAndGetSession,
+	loginWithAgent,
 } from './testHelpers.ts';
 import {NOT_ALLOWED_USERNAMES} from '../../src/services/adminService.ts';
-import {SESSION_COOKIE} from '../../src/configs/cookies.ts';
 
 describe('Admin Integration Tests', () => {
-	const sessionCookieName = SESSION_COOKIE.name;
 	let agent: ReturnType<typeof request.agent>;
 
 	beforeEach(async () => {
@@ -30,17 +28,10 @@ describe('Admin Integration Tests', () => {
 
 	it('should allow admin to create a new user', async () => {
 		const admin = await createTestUser({role: 'ADMIN'});
-		const adminSessionId = await loginAndGetSession(
-			admin.email,
-			admin.password,
-		);
+		await loginWithAgent(agent, admin.email, admin.password);
 
 		const user = generateRandomTestUser();
-
-		const res = await agent
-			.post('/api/v1/admin/create-user')
-			.set('Cookie', [`${sessionCookieName}=${adminSessionId}`])
-			.send(user);
+		const res = await agent.post('/api/v1/admin/create-user').send(user);
 
 		expect(res.statusCode).toEqual(201);
 		expect(res.body).toHaveProperty('success', true);
@@ -56,14 +47,10 @@ describe('Admin Integration Tests', () => {
 
 	it('should prevent non-admin from creating a new user', async () => {
 		const user = await createTestUser();
-		const userSessionId = await loginAndGetSession(user.email, user.password);
+		await loginWithAgent(agent, user.email, user.password);
 
 		const user2 = generateRandomTestUser();
-
-		const res = await agent
-			.post('/api/v1/admin/create-user')
-			.set('Cookie', [`${sessionCookieName}=${userSessionId}`])
-			.send(user2);
+		const res = await agent.post('/api/v1/admin/create-user').send(user2);
 
 		expect(res.statusCode).toEqual(401);
 		expect(res.body).toHaveProperty('success', false);
@@ -76,22 +63,16 @@ describe('Admin Integration Tests', () => {
 
 	it('shouldnt allow creating users with not allowed usernames', async () => {
 		const admin = await createTestUser({role: 'ADMIN'});
-		const adminSessionId = await loginAndGetSession(
-			admin.email,
-			admin.password,
-		);
+		await loginWithAgent(agent, admin.email, admin.password);
 
 		for (const username of NOT_ALLOWED_USERNAMES) {
 			const randomId = Math.random().toString(36).substring(2, 10);
 
-			const res = await agent
-				.post('/api/v1/admin/create-user')
-				.set('Cookie', [`${sessionCookieName}=${adminSessionId}`])
-				.send({
-					username,
-					email: `user_${randomId}@test.com`,
-					password: 'Password123!',
-				});
+			const res = await agent.post('/api/v1/admin/create-user').send({
+				username,
+				email: `user_${randomId}@test.com`,
+				password: 'Password123!',
+			});
 
 			expect(res.statusCode).toEqual(409);
 			expect(res.body).toHaveProperty('success', false);
@@ -105,22 +86,16 @@ describe('Admin Integration Tests', () => {
 
 	it('shouldnt allow creating users with duplicate usernames', async () => {
 		const admin = await createTestUser({role: 'ADMIN'});
-		const adminSessionId = await loginAndGetSession(
-			admin.email,
-			admin.password,
-		);
+		await loginWithAgent(agent, admin.email, admin.password);
 
 		const user = await createTestUser();
 
 		// Try to create another user with the same username but different email
-		const res = await agent
-			.post('/api/v1/admin/create-user')
-			.set('Cookie', [`${sessionCookieName}=${adminSessionId}`])
-			.send({
-				username: user.username,
-				email: 'different@test.com',
-				password: user.password,
-			});
+		const res = await agent.post('/api/v1/admin/create-user').send({
+			username: user.username,
+			email: 'different@test.com',
+			password: user.password,
+		});
 
 		expect(res.statusCode).toEqual(409);
 		expect(res.body).toHaveProperty('success', false);
@@ -130,22 +105,16 @@ describe('Admin Integration Tests', () => {
 
 	it('shouldnt allow creating users with duplicate emails', async () => {
 		const admin = await createTestUser({role: 'ADMIN'});
-		const adminSessionId = await loginAndGetSession(
-			admin.email,
-			admin.password,
-		);
+		await loginWithAgent(agent, admin.email, admin.password);
 
 		const user = await createTestUser();
 
 		// Try to create another user with the same email but different username
-		const res = await agent
-			.post('/api/v1/admin/create-user')
-			.set('Cookie', [`${sessionCookieName}=${adminSessionId}`])
-			.send({
-				username: 'differentUsername',
-				email: user.email,
-				password: user.password,
-			});
+		const res = await agent.post('/api/v1/admin/create-user').send({
+			username: 'differentUsername',
+			email: user.email,
+			password: user.password,
+		});
 
 		expect(res.statusCode).toEqual(409);
 		expect(res.body).toHaveProperty('success', false);
@@ -158,19 +127,13 @@ describe('Admin Integration Tests', () => {
 
 	it('should convert username and email to lowercase when creating a user', async () => {
 		const admin = await createTestUser({role: 'ADMIN'});
-		const adminSessionId = await loginAndGetSession(
-			admin.email,
-			admin.password,
-		);
+		await loginWithAgent(agent, admin.email, admin.password);
 
-		const res = await agent
-			.post('/api/v1/admin/create-user')
-			.set('Cookie', [`${sessionCookieName}=${adminSessionId}`])
-			.send({
-				username: 'TestUserUpper',
-				email: 'user@Test.com',
-				password: 'Password123!',
-			});
+		const res = await agent.post('/api/v1/admin/create-user').send({
+			username: 'TestUserUpper',
+			email: 'user@Test.com',
+			password: 'Password123!',
+		});
 
 		expect(res.statusCode).toEqual(201);
 		expect(res.body).toHaveProperty('success', true);
