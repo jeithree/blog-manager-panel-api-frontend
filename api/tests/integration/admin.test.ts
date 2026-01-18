@@ -18,12 +18,8 @@ describe('Admin Integration Tests', () => {
 	});
 
 	afterEach(async () => {
-		try {
-			await clearUserTable();
-			await clearRedisSessions();
-		} catch (error) {
-			console.error('Error during afterEach cleanup:', error);
-		}
+		await clearRedisSessions();
+		await clearUserTable();
 	});
 
 	it('should allow admin to create a new user', async () => {

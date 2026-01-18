@@ -16,12 +16,8 @@ describe('Authentication Integration Tests', () => {
 	});
 
 	afterEach(async () => {
-		try {
-			await clearUserTable();
-			await clearRedisSessions();
-		} catch (error) {
-			console.error('Error during afterEach cleanup:', error);
-		}
+		await clearRedisSessions();
+		await clearUserTable();
 	});
 
 	it('should fail login when incorrect password is passed', async () => {
@@ -86,13 +82,16 @@ describe('Authentication Integration Tests', () => {
 
 		expect(res.statusCode).toEqual(200);
 		expect(res.body).toHaveProperty('message', 'Logout successful');
+		expect(res.headers['set-cookie']).toBeDefined();
 	});
 
 	it('should have no active session after logout', async () => {
 		const user = await createTestUser();
 		await loginWithAgent(agent, user.email, user.password);
 
-		await agent.post('/api/v1/auth/logout');
+		const logoutRes = await agent.post('/api/v1/auth/logout');
+		expect(logoutRes.headers['set-cookie']).toBeDefined();
+
 		const res = await agent.get('/api/v1/auth/session');
 
 		expect(res.statusCode).toEqual(200);
