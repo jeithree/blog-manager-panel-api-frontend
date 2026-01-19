@@ -30,7 +30,7 @@ export default function DashboardLayout({
 	return (
 		<div className="min-h-screen bg-linear-to-b from-background via-muted/30 to-background">
 			<DashboardNav />
-			<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+			<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-35 md:pt-25">
 				{children}
 			</main>
 		</div>

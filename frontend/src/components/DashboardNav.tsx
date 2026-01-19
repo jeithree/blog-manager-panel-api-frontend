@@ -48,7 +48,7 @@ export function DashboardNav() {
 	};
 
 	return (
-		<nav className="border-b bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/70 shadow-sm">
+		<nav className="border-b bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/70 shadow-sm fixed w-full z-10">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="flex h-16 items-center justify-between">
 					<div className="flex items-center gap-8">
