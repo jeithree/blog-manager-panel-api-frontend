@@ -211,7 +211,7 @@ export default function EditPostPage() {
 				if (data.tagNames && data.tagNames.length > 0) {
 					const matchedIds = data.tagNames
 						.map((name) =>
-							tags.find((t) => t.name.toLowerCase() === name.toLowerCase())
+							tags.find((t) => t.name.toLowerCase() === name.toLowerCase()),
 						)
 						.filter(Boolean)
 						.map((t) => (t as Tag).id);
@@ -242,7 +242,7 @@ export default function EditPostPage() {
 				toast.success('Image prompt generated successfully');
 			} else {
 				toast.error(
-					response.error?.message || 'Failed to generate image prompt'
+					response.error?.message || 'Failed to generate image prompt',
 				);
 			}
 		} catch (error) {
@@ -342,7 +342,7 @@ export default function EditPostPage() {
 			const response = await postService.updatePost(
 				post.id,
 				updateData,
-				imageFile || undefined
+				imageFile || undefined,
 			);
 
 			if (response.success) {
@@ -368,14 +368,14 @@ export default function EditPostPage() {
 		try {
 			const response = await postService.exportPostMarkdown(
 				post.id,
-				post.blogId
+				post.blogId,
 			);
 			if (!response.success) {
 				console.error('Markdown export failed', response.error);
 				toast.error(response.error || 'Failed to export markdown');
 			} else {
 				toast.success(
-					'Markdown export triggered – check the content folder once it completes.'
+					'Markdown export triggered – check the content folder once it completes.',
 				);
 			}
 		} catch (error) {
@@ -389,7 +389,7 @@ export default function EditPostPage() {
 	const handleDelete = async () => {
 		if (!post || post.status !== PostStatus.DRAFT) return;
 		const confirmed = window.confirm(
-			'Delete this draft? This action cannot be undone.'
+			'Delete this draft? This action cannot be undone.',
 		);
 		if (!confirmed) return;
 
@@ -529,7 +529,7 @@ export default function EditPostPage() {
 											className="cursor-pointer"
 											onClick={() =>
 												setSelectedTagIds((prev) =>
-													prev.filter((id) => id !== tagId)
+													prev.filter((id) => id !== tagId),
 												)
 											}>
 											{tag?.name} ×
@@ -704,7 +704,7 @@ export default function EditPostPage() {
 										className="bg-slate-600 text-white hover:bg-slate-700"
 										onClick={() => {
 											const el = document.getElementById(
-												'image'
+												'image',
 											) as HTMLInputElement | null;
 											el?.click();
 										}}>
@@ -720,7 +720,16 @@ export default function EditPostPage() {
 								id="publishDate"
 								type="datetime-local"
 								value={publishDate}
-								onChange={(e) => setPublishDate(e.target.value)}
+								onChange={(e) => {
+									const value = e.target.value;
+									// If user selected a date, ensure time is set to 08:00
+									if (value && value.length >= 10) {
+										const datePart = value.substring(0, 10);
+										setPublishDate(`${datePart}T08:00`);
+									} else {
+										setPublishDate(value);
+									}
+								}}
 							/>
 						</div>
 					</CardContent>
