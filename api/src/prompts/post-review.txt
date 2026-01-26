@@ -28,6 +28,7 @@ Review the blog post description and content generated based on the title and gu
 - Select only the most relevant posts; if fewer than 1–3 fit naturally, include fewer.
 - CRITICAL: Never repeat the same link twice in the post. Each URL can only appear once.
 - CRITICAL: Do not mention other posts or reference them without linking. If you reference a post topic, either link it (if available) or don't mention it at all.
+- CRITICAL: Should not include yourdomain.com or example.com or similar in links.
 - Links should flow naturally within the content.
 
 # Content Guidelines:
