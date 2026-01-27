@@ -472,10 +472,6 @@ For AI-powered content generation features, each blog requires:
 
 **Note**: All these credentials are configured per-blog during blog creation and can be updated in the blog settings.
 
-## 📝 License
-
-This project is private and proprietary.
-
 ## 🤝 Contributing
 
 Contributions, issues, and feature requests are welcome!
