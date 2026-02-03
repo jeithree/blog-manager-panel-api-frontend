@@ -17,11 +17,13 @@ A full-stack blog management platform built with Express.js, Prisma ORM, and Nex
 - [Environment Variables](#environment-variables)
 
 <a id="overview"></a>
+
 ## 🌟 Overview
 
 Blog Manager is a comprehensive content management system designed for managing multiple blogs with features including user authentication, role-based access control, content categorization, AI-assisted content creation, and image management with Cloudflare R2 integration.
 
 <a id="architecture"></a>
+
 ## 🏗️ Architecture
 
 The project consists of three main components:
@@ -70,6 +72,7 @@ A separate background worker process handles:
 - Bulk operations and exports
 
 <a id="features"></a>
+
 ## ✨ Features
 
 - 🔐 **Authentication & Authorization**: Secure session-based authentication with role-based access control
@@ -84,6 +87,7 @@ A separate background worker process handles:
 - 📊 **API Rate Limiting**: Protection against abuse with configurable rate limits
 
 <a id="tech-stack"></a>
+
 ## 🛠️ Tech Stack
 
 ### Backend
@@ -112,9 +116,11 @@ A separate background worker process handles:
 - Lucide Icons
 
 <a id="getting-started"></a>
+
 ## 🚀 Getting Started
 
 <a id="prerequisites"></a>
+
 ### Prerequisites
 
 - Node.js (v20 or higher)
@@ -124,6 +130,7 @@ A separate background worker process handles:
 - Docker and Docker Compose (for containerized deployment)
 
 <a id="local-development-setup"></a>
+
 ### Local Development Setup
 
 #### 1. Clone the repository
@@ -240,6 +247,7 @@ The services will be available at:
 - **Worker**: Background process (no web interface)
 
 <a id="docker-deployment"></a>
+
 ### Docker Deployment
 
 #### 1. Prepare environment files
@@ -304,6 +312,7 @@ The services will be available at:
 - **API**: http://localhost:5000 (or custom PORT from .env)
 
 <a id="project-structure"></a>
+
 ## 📁 Project Structure
 
 ```
@@ -346,6 +355,7 @@ blog-manager/
 ```
 
 <a id="api-documentation"></a>
+
 ## 📚 API Documentation
 
 All API endpoints are prefixed with `/api/v1`.
@@ -425,6 +435,7 @@ All API endpoints are prefixed with `/api/v1`.
 For detailed API documentation, refer to the route files in [api/src/routes](api/src/routes).
 
 <a id="environment-variables"></a>
+
 ## 🔧 Environment Variables
 
 ### API Environment Variables
@@ -484,6 +495,7 @@ For AI-powered content generation features, each blog requires:
 **Note**: All these credentials are configured per-blog during blog creation and can be updated in the blog settings.
 
 <a id="contributing"></a>
+
 ## 🤝 Contributing
 
 Contributions, issues, and feature requests are welcome!
