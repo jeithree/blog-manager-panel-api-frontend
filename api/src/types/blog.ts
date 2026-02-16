@@ -13,13 +13,14 @@ export const createBlogSchema = z.object({
 		.string()
 		.max(500, 'Description must be at most 500 characters'),
 	netlifySiteId: z.string(),
-    netlifyToken: z.string(),
-    R2AccessKeyId: z.string(),
-    R2SecretAccessKey: z.string(),
-    R2AccountId: z.string(),
+	netlifyToken: z.string(),
+	R2AccessKeyId: z.string(),
+	R2SecretAccessKey: z.string(),
+	R2AccountId: z.string(),
 	R2BucketName: z.string(),
-    R2CustomDomain: z.url(),
-    openAIApiKey: z.string(),
+	R2CustomDomain: z.url(),
+	openAIApiKey: z.string(),
+	isActive: z.boolean().optional(),
 });
 export type CreateBlogDto = z.infer<typeof createBlogSchema>;
 

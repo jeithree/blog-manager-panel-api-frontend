@@ -7,15 +7,16 @@ export type Blog = {
 	title: string;
 	domain: string;
 	description: string;
-    netlifyToken: string;
+	netlifyToken: string;
 	netlifySiteId: string;
 	R2AccessKeyId: string;
-    R2SecretAccessKey: string;
-    R2AccountId: string;
+	R2SecretAccessKey: string;
+	R2AccountId: string;
 	R2BucketName: string;
 	R2CustomDomain: string;
-    openAIApiKey: string;
-    apiKey: string;
+	openAIApiKey: string;
+	apiKey: string;
+	isActive: boolean;
 	createdAt: string;
 	updatedAt: string;
 };
@@ -24,28 +25,30 @@ export type CreateBlogData = {
 	title: string;
 	domain: string;
 	description: string;
-    netlifyToken: string;
+	netlifyToken: string;
 	netlifySiteId: string;
-    R2AccessKeyId: string;
-    R2SecretAccessKey: string;
-    R2AccountId: string;
+	R2AccessKeyId: string;
+	R2SecretAccessKey: string;
+	R2AccountId: string;
 	R2BucketName: string;
 	R2CustomDomain: string;
-    openAIApiKey: string;
+	openAIApiKey: string;
+	isActive?: boolean;
 };
 
 export type UpdateBlogData = {
 	title?: string;
 	domain?: string;
 	description?: string;
-    netlifyToken?: string;
+	netlifyToken?: string;
 	netlifySiteId?: string;
-    R2AccessKeyId?: string;
-    R2SecretAccessKey?: string;
-    R2AccountId?: string;
+	R2AccessKeyId?: string;
+	R2SecretAccessKey?: string;
+	R2AccountId?: string;
 	R2BucketName?: string;
 	R2CustomDomain?: string;
-    openAIApiKey?: string;
+	openAIApiKey?: string;
+	isActive?: boolean;
 };
 
 export const blogService = {

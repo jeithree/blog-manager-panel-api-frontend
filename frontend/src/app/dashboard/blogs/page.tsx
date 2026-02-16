@@ -87,6 +87,11 @@ export default function BlogsPage() {
 														Editor
 													</Badge>
 												)}
+												<Badge
+													variant={blog.isActive ? 'default' : 'destructive'}
+													className="text-xs">
+													{blog.isActive ? 'Active' : 'Inactive'}
+												</Badge>
 											</div>
 											<a
 												href={`https://${blog.domain}`}
@@ -134,7 +139,7 @@ export default function BlogsPage() {
 													{blog.netlifyToken ? '••••••••••••' : 'Not set'}
 												</p>
 											</div>
-                                            <div>
+											<div>
 												<p className="text-xs font-medium text-muted-foreground">
 													R2 Account ID
 												</p>
