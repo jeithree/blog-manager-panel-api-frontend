@@ -6,8 +6,8 @@ import {Toaster} from '@/components/ui/sonner';
 const inter = Inter({subsets: ['latin']});
 
 export const metadata: Metadata = {
-	title: 'Simple Next.js App',
-	description: 'A simple Next.js starter template',
+	title: 'Blog Manager',
+	description: 'Manage your blog posts with ease using our Blog Manager App. Create, edit, and organize your content all in one place.',
 };
 
 export default function RootLayout({
