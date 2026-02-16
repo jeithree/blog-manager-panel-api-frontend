@@ -138,8 +138,8 @@ export const startCronJobs = () => {
 		}
 	});
 
-	// run every day at 9 AM, but only enqueue for blogs whose last post is >= 5 days old
-	schedule.scheduleJob('0 9 * * *', async () => {
+	// run every day at 10 AM, but only enqueue for blogs whose last post is >= 5 days old
+	schedule.scheduleJob('0 10 * * *', async () => {
 		try {
 			await addJobsToPostsCreationQueue();
 		} catch (error) {
@@ -152,7 +152,7 @@ export const startCronJobs = () => {
 	});
 
 	Logger.log(
-		'Cron jobs started: publishScheduledPosts every minute, addJobsToPostsCreationQueue daily at 9 AM',
+		'Cron jobs started: publishScheduledPosts every minute, addJobsToPostsCreationQueue daily at 10 AM',
 		'info'
 	);
 };
