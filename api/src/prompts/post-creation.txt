@@ -26,6 +26,7 @@ Create a blog post (1200–1600 words) in Markdown format based on the title and
 - Use ### only for subsections clearly nested under a main section.
 - Always use standard inline links: [anchor text](URL).
 - Keep anchor text descriptive and concise; avoid raw URLs or reference-style links.
+- Use **strong/bold** formatting to emphasize important terms, key concepts, and critical takeaways throughout the text.
 
 # Internal Linking Rules:
 ⚠️ CRITICAL RULE - NEVER REPEAT LINKS ⚠️
