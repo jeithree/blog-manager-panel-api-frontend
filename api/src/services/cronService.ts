@@ -160,7 +160,7 @@ export const startCronJobs = () => {
 export const addJobsToPostsCreationQueue = async () => {
 	const queue = getPostsCreationQueue();
 
-	const blogs = await prisma.blog.findMany({});
+	const blogs = await prisma.blog.findMany({where: {isActive: true}});
 	const now = new Date();
 
 	for (const blog of blogs) {
