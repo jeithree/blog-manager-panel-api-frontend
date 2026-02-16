@@ -722,13 +722,7 @@ export default function EditPostPage() {
 								value={publishDate}
 								onChange={(e) => {
 									const value = e.target.value;
-									// If user selected a date, ensure time is set to 08:00
-									if (value && value.length >= 10) {
-										const datePart = value.substring(0, 10);
-										setPublishDate(`${datePart}T08:00`);
-									} else {
-										setPublishDate(value);
-									}
+									setPublishDate(value);
 								}}
 							/>
 						</div>
