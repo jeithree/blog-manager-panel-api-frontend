@@ -104,7 +104,21 @@ export default function EditBlogPage() {
 		setIsSaving(true);
 
 		try {
-			const response = await blogService.updateBlog(blogId, formData);
+			// Filter out masked credential values to prevent overwriting actual credentials
+			const MASKED_VALUE = '••••••••••••';
+			const updateData: Partial<typeof formData> = {...formData};
+
+			if (updateData.netlifyToken === MASKED_VALUE) {
+				delete updateData.netlifyToken;
+			}
+			if (updateData.R2SecretAccessKey === MASKED_VALUE) {
+				delete updateData.R2SecretAccessKey;
+			}
+			if (updateData.openAIApiKey === MASKED_VALUE) {
+				delete updateData.openAIApiKey;
+			}
+
+			const response = await blogService.updateBlog(blogId, updateData);
 
 			if (response.success) {
 				toast.success('Blog updated successfully');

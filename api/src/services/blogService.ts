@@ -42,7 +42,7 @@ export const createBlog = async (userId: string, blogData: CreateBlogDto) => {
 export const updateBlog = async (
 	userId: string,
 	blogId: string | undefined,
-	blogData: UpdateBlogDto
+	blogData: UpdateBlogDto,
 ) => {
 	if (!blogId) {
 		throw new BadRequestError('Blog ID is required', 'BLOG_ID_REQUIRED');
@@ -59,9 +59,23 @@ export const updateBlog = async (
 		throw new NotFoundError('Blog not found', 'BLOG_NOT_FOUND');
 	}
 
+	// Remove masked credential values to prevent overwriting actual credentials
+	const MASKED_VALUE = '••••••••••••';
+	const updateData = {...blogData};
+
+	if (updateData.netlifyToken === MASKED_VALUE) {
+		delete updateData.netlifyToken;
+	}
+	if (updateData.R2SecretAccessKey === MASKED_VALUE) {
+		delete updateData.R2SecretAccessKey;
+	}
+	if (updateData.openAIApiKey === MASKED_VALUE) {
+		delete updateData.openAIApiKey;
+	}
+
 	const updatedBlog = await prisma.blog.update({
 		where: {id: blogId},
-		data: blogData,
+		data: updateData,
 	});
 
 	await RedisCache.deleteByPattern(`public:blog:${blogId}*`);
@@ -154,7 +168,7 @@ export const getPublicBlog = async (apiKey: string, blogId?: string) => {
 	if (!blog) {
 		throw new UnauthorizedError(
 			'Invalid API key for this blog',
-			'INVALID_API_KEY'
+			'INVALID_API_KEY',
 		);
 	}
 

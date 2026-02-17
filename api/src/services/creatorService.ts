@@ -17,7 +17,7 @@ const getPromptTemplate = async (
 		| 'post-review'
 		| 'image-prompt-creation'
 		| 'post-edit',
-	blogId: string
+	blogId: string,
 ) => {
 	// Only image prompt is stored in DB. Other templates remain on disk.
 	// This is because image prompt may be customized per blog.
@@ -29,7 +29,7 @@ const getPromptTemplate = async (
 
 		throw new NotFoundError(
 			'Prompt template not found',
-			'PROMPT_TEMPLATE_NOT_FOUND'
+			'PROMPT_TEMPLATE_NOT_FOUND',
 		);
 	}
 
@@ -51,14 +51,14 @@ const getPromptTemplate = async (
 const replacePlaceholder = (
 	template: string,
 	placeholder: string,
-	value: string
+	value: string,
 ) => {
 	return template.replace(placeholder, value);
 };
 
 export const generateTitleSuggestions = async (
 	userId: string,
-	blogId: string
+	blogId: string,
 ) => {
 	if (!blogId) {
 		throw new NotFoundError('Blog ID is required', 'BLOG_ID_REQUIRED');
@@ -97,7 +97,7 @@ export const generateTitleSuggestions = async (
 	const existingPostsList = blog.posts
 		.map(
 			(post) =>
-				`- ${post.title} | Category: ${post.category.name} | Slug: ${post.slug}`
+				`- ${post.title} | Category: ${post.category.name} | Slug: ${post.slug}`,
 		)
 		.join('\n');
 
@@ -106,24 +106,24 @@ export const generateTitleSuggestions = async (
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{CATEGORIES LIST PLACEHOLDER}}',
-		categoriesNamesList
+		categoriesNamesList,
 	);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{CATEGORIES PLACEHOLDER}}',
-		categoriesList
+		categoriesList,
 	);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{POSTS PLACEHOLDER}}',
-		existingPostsList || 'No existing posts.'
+		existingPostsList || 'No existing posts.',
 	);
 
 	let contentToAvoid = await getPromptTemplate('content-to-avoid', blogId);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{CONTENT TO AVOID PLACEHOLDER}}',
-		contentToAvoid || 'No specific content to avoid.'
+		contentToAvoid || 'No specific content to avoid.',
 	);
 
 	// console.log('Prompt Template:\n', promptTemplate);
@@ -138,9 +138,9 @@ export const generateTitleSuggestions = async (
 					z.object({
 						title: z.string(),
 						slug: z.string(),
-					})
+					}),
 				),
-			})
+			}),
 		),
 	});
 
@@ -157,7 +157,7 @@ export const generateTitleSuggestions = async (
 	const parsed = TitleSuggestionsSchema.parse(JSON.parse(response.output_text));
 
 	const categoryNameToId = new Map(
-		blog.categories.map((cat) => [cat.name.toLowerCase(), cat.id])
+		blog.categories.map((cat) => [cat.name.toLowerCase(), cat.id]),
 	);
 
 	// Return titles as objects containing title+slug so frontend can use generated slugs
@@ -172,7 +172,7 @@ export const generateTitleSuggestions = async (
 
 export const generatePostContent = async (
 	userId: string,
-	data: GeneratePostContentDto
+	data: GeneratePostContentDto,
 ) => {
 	const {blogId, categoryId, title, slug} = data;
 
@@ -210,7 +210,7 @@ export const generatePostContent = async (
 	if (!category) {
 		throw new NotFoundError(
 			'Category not found in this blog',
-			'CATEGORY_NOT_FOUND'
+			'CATEGORY_NOT_FOUND',
 		);
 	}
 
@@ -219,7 +219,7 @@ export const generatePostContent = async (
 	const existingPostsList = blog.posts
 		.map(
 			(post) =>
-				`- ${post.title} | Category: ${post.category.name} | Slug: /blog/${post.slug}`
+				`- ${post.title} | Category: ${post.category.name} | Slug: /blog/${post.slug}`,
 		)
 		.join('\n');
 
@@ -228,34 +228,34 @@ export const generatePostContent = async (
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{CATEGORIES LIST PLACEHOLDER}}',
-		categoriesNamesList
+		categoriesNamesList,
 	);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{POST TITLE PLACEHOLDER}}',
-		title
+		title,
 	);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{CATEGORY PLACEHOLDER}}',
-		category.name
+		category.name,
 	);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{TAGS PLACEHOLDER}}',
-		tagsList || 'No tags available.'
+		tagsList || 'No tags available.',
 	);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{POSTS PLACEHOLDER}}',
-		existingPostsList || 'No existing posts.'
+		existingPostsList || 'No existing posts.',
 	);
 
 	let contentToAvoid = await getPromptTemplate('content-to-avoid', blogId);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{CONTENT TO AVOID PLACEHOLDER}}',
-		contentToAvoid || 'No specific content to avoid.'
+		contentToAvoid || 'No specific content to avoid.',
 	);
 
 	// console.log('Prompt Template:\n', promptTemplate);
@@ -308,7 +308,7 @@ export const reviewGeneratedPost = async (
 		postTitle: string;
 		postDescription: string;
 		postContent: string;
-	}
+	},
 ) => {
 	const {blogId, postTitle, postDescription, postContent} = data;
 
@@ -340,17 +340,17 @@ export const reviewGeneratedPost = async (
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{POST TITLE PLACEHOLDER}}',
-		postTitle || ''
+		postTitle || '',
 	);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{POST DESCRIPTION PLACEHOLDER}}',
-		postDescription || ''
+		postDescription || '',
 	);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{CURRENT_POST_CONTENT_PLACEHOLDER}}',
-		postContent || ''
+		postContent || '',
 	);
 
 	// console.log('Prompt Template:\n', promptTemplate);
@@ -390,7 +390,7 @@ export const generateImagePrompt = async (blogPost: string, blogId: string) => {
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'[BLOG POST PLACEHOLDER]',
-		blogPost
+		blogPost,
 	);
 
 	// console.log('Prompt Template:\n', promptTemplate);
@@ -416,7 +416,7 @@ export const generateImagePrompt = async (blogPost: string, blogId: string) => {
 
 export const generatePostEdit = async (
 	userId: string,
-	data: GeneratePostEditDto
+	data: GeneratePostEditDto,
 ) => {
 	const {blogId, postId, changeRequest} = data;
 
@@ -453,12 +453,12 @@ export const generatePostEdit = async (
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{CURRENT_POST_CONTENT_PLACEHOLDER}}',
-		post.content ?? ''
+		post.content ?? '',
 	);
 	promptTemplate = replacePlaceholder(
 		promptTemplate,
 		'{{CHANGE_REQUEST_PLACEHOLDER}}',
-		changeRequest
+		changeRequest,
 	);
 
 	// console.log('Prompt Template:\n', promptTemplate);
@@ -479,7 +479,7 @@ export const generatePostEdit = async (
 
 	const parsed = PostEditSchema.parse(JSON.parse(response.output_text));
 
-    const issues = await reviewGeneratedPost(userId, {
+	const issues = await reviewGeneratedPost(userId, {
 		blogId,
 		postTitle: post.title,
 		postDescription: post.description || '',
@@ -490,6 +490,6 @@ export const generatePostEdit = async (
 		postId,
 		blogId,
 		...parsed,
-        AIPostReviewIssues: issues,
+		AIPostReviewIssues: issues,
 	};
 };
